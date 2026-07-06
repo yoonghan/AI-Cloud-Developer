@@ -1,0 +1,42 @@
+site_name: AI Developer, covering both AI-200 and AI-103
+site_author: Han
+site_url: https://github.com/yoonghan/AI-Cloud-Developer
+
+theme:
+  name: material
+  palette:
+    # Deep Azure Blue for a professional Microsoft feel
+    - scheme: default
+      primary: azure
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: azure
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+    - search.suggest
+
+nav:
+  - Home: index.md
+  - Topics:
+    - Basic.md
+  - Exam: 
+    - Exam_Preparation/Notes.md
+    - Exam_Preparation/Labs.md
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
