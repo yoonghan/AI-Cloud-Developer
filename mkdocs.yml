@@ -28,6 +28,8 @@ nav:
   - Home: index.md
   - Topics:
     - Basic.md
+    - AzureContainerRegistry.md
+    - AppServices.md
   - Exam: 
     - Exam_Preparation/Notes.md
     - Exam_Preparation/Labs.md
