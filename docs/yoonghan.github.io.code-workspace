@@ -1,17 +1,13 @@
 {
-	"folders": [
-		{
-			"path": "../../yoonghan.github.io"
-		},
-		{
-			"path": ".."
-		},
-		{
-			"path": "../../../Downloads/app-svc-container-python"
-		}
-	],
-	"settings": {
-		"typescript.tsdk": "node_modules/typescript/lib",
-		"typescript.enablePromptUseWorkspaceTsdk": true
-	}
+    "folders": [
+        {
+            "path": "../../../Downloads/aca-deploy-python"
+        },
+        {
+            "path": ".."
+        },
+        {
+            "path": "../../yoonghan.github.io"
+        }
+    ]
 }
