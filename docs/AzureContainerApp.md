@@ -10,6 +10,17 @@
     - log rules
 4. Cannot change environment configuration after creation.
 
+## Revisions
+1. Use Digest instead of tag for container images if you want to ensure specific version. I.e. `myregistry.azurecr.io/myapp@sha256:<digest>`. Updating is:
+```
+az containerapp update \
+  --name <app-name> \
+  --resource-group <resource-group> \
+  --image <registry>/<repo>@sha256:<digest>
+```
+2. You can deactivate a revision `az containerapp revision deactivate`. This option is useful when you want to rollback to the previous version.
+3. 
+
 ## Ingress
 1. external - internet/outbound traffic enabled.
 2. internal - no out bound traffic to external.
@@ -35,6 +46,16 @@ az containerapp update \
     - resource allocation
     - scale rules
     - init containers
+2. Revision can be deactivated.
+3. You can set label to each revision.
+
+```bash
+az containerapp revision label add \
+  --name <CONTAINER_APP_NAME> \
+  --resource-group <RESOURCE_GROUP_NAME> \
+  --revision <REVISION_NAME> \
+  --label <LABEL_NAME>
+```
 
 ## Environment Variables
 1. Two types
@@ -42,6 +63,7 @@ az containerapp update \
     - secretref - reference to a secret
 2. Secrets are encrypted and stored separately from the environment, hence secretref:X.
 3. Can be defined in YAML `az containerapp update/create --yaml`
+4. Env variables can be deleted.
 
 ```json
 {
@@ -78,3 +100,66 @@ az containerapp update \
 1. Liveness Probe - determines if the container is running.
 2. Readiness Probe - determines if the container is ready to receive traffic.
 3. Default is TCP, means it will check the connection to the specified port, not via httpGET.
+
+## Container
+1. Rule: Always have Memory request 2x of CPU request.
+```bash
+az containerapp create \
+  --name order-api \
+  --resource-group rg-ecommerce \
+  --environment my-environment \
+  --image myregistry.azurecr.io/order-api:v1 \
+  --cpu 0.5 \
+  --memory 1.0Gi \
+  --min-replicas 2 \
+  --max-replicas 20
+```
+2. There is a **Dedicated** vs **Pay-as-you-go** pricing model.
+3. **Dedicated** - you reserve the capacity, hence you pay for the capacity even if not in use. You can choose: 
+   - **General Purpose** - 
+   - **High Performance** - 
+
+
+## Scale
+
+### Scaling Rules 
+1. Works via KEDA - Kubernetes Event-driven Autoscaling.
+2. Rules:
+  - HTTP Scaling - concurrent requests per container
+  - CPU/Memory Scaling - based on cpu/memory utilization percentage
+  - KEDA Scaling - External Scaling
+  - Azure Service Bus Scaling - topic name + queue name + queue length
+  - Azure Queue Scaling - queue name + queue length
+  - Cron job Scaling - based on cron expression
+  - Kafka Scaling - topic name + partition count
+  - Redis Scaling - Redis length
+  - RabbitMQ Scaling - queue length
+  - Redis Stream Scaling - Redis length
+2. Can use Managed identity.
+3. Properties to be aware of:
+  - --scale-rule-auth  = authorization
+  - `min-replicas` and `max-replicas` default to 1.
+4. Can use yaml.
+5. To see replicas use `az containerapp replica list -n N -g G`.
+6. To see specific replica logs
+```
+az containerapp logs show \
+  --name <APP_NAME> \
+  --resource-group <RESOURCE_GROUP> \
+  --revision <REVISION_NAME> \
+  --replica <REPLICA_NAME> \
+  --container <CONTAINER_NAME> \
+  --type console \
+  --tail 50 \
+  --follow true
+```
+7. [link](https://learn.microsoft.com/en-us/training/modules/scale-containers-azure-container-apps/4-keda-scalers-custom-workloads?pivots=text)
+
+### Traffic Management
+1. To have traffic-based scaling, enable `--revision-mode multiple`. Example `--revision-weight order-api--v1=80 order-api--v2=20`.
+2. Can use latest, `--revision-weights <OLD_REVISION_NAME>=80 latest=20` or `--latest-revision true --weight 100`.
+3. Labelling with revision-weight is only for traffic management. 
+4. Labelling with `az containerapp revision label add --name <APP_NAME> --resource-group <RESOURCE_GROUP> --revision <REVISION_NAME> --label <LABEL_NAME>`.
+5. Remember you cannot scale specific revision! You need redeployment, hence only the latest version is scaled; and you need to update the traffic control.
+
+[ACA Scale Rules](img/aca-scale-rules.png)
