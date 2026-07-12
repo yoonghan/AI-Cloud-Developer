@@ -26,7 +26,11 @@ az webapp config set \
 
 ## Deployment Slots
 
-1. Enable promote and also change for "API_ENDPOINT".
+1. Enabled with Basic, Standard, Premium, and Isolated pricing tiers. Not available for Free or Shared tiers. 5 slot or 20 slots.
+2. Deployment, works like KEDA after new code is deployed to the slot, the app will be restarted, then traffic will be shifted to the new slot.
+    - Blue/Green
+    - Canary Releases - lil' by lil'
+3. Enable promote and also change for "API_ENDPOINT".
 ```bash
 az webapp config appsettings set \
     --resource-group myResourceGroup \
@@ -35,6 +39,28 @@ az webapp config appsettings set \
     --slot-settings \
         ENVIRONMENT=staging \
         API_ENDPOINT=https://api-staging.example.com
+```
+4. Sticky connection is important! Sticky Connection - for stateful apps where prod/staging has own configuration. When swapped only the app configuration will be swapped, not the sticky connection. It means prod/staging still use own configuration after swap. If not check, swap will swap database and configurationas well. Check it in Configuration -> General Settings.
+```
+**Scenario A**: The Checkbox is UNCHECKED (Not Sticky)
+
+By default, settings are not sticky. This means the configuration is glued to your Code.
+
+Before Swap: Your Staging slot is running Code_v2 and has the Test_Database configuration. Your Production slot is running Code_v1 and has the Prod_Database configuration.
+
+The Swap: You click swap.
+
+After Swap: Code_v2 moves to Production, but it brings the Test_Database configuration with it! Your production users are now accidentally reading and writing to your test database. Meanwhile, Code_v1 goes to Staging and takes the Prod_Database setting with it. (This is usually a disaster for backend systems).
+
+***Scenario B***: The Checkbox is CHECKED ("Deployment slot setting" / Sticky)
+
+When you check this box, you un-glue the configuration from the code and nail it to the floor of the Slot itself.
+
+Before Swap: Staging has Code_v2 (nailed down: Test_Database). Prod has Code_v1 (nailed down: Prod_Database).
+
+The Swap: You click swap.
+
+After Swap: The code swaps, but the settings stay exactly where they were! Production now gets the shiny new Code_v2, but because the Prod_Database setting is nailed to the Production slot floor, Code_v2 automatically connects to the real production data. Staging gets Code_v1 and connects to the test data.
 ```
 
 ## Kudu
