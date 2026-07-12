@@ -9,6 +9,21 @@
     - monitoring
     - log rules
 4. Cannot change environment configuration after creation.
+5. If lazy can use `az containerapp create up`. I.e.
+```bash
+az containerapp up \
+    --name order-api \
+    --resource-group rg-ecommerce \
+    --image myregistry.azurecr.io/order-api:v1 \
+    --cpu 0.5 \
+    --memory 1.0Gi \
+    --min-replicas 2 \
+    --max-replicas 20 \
+    --ingress external \
+    --target-port 8080 \
+    --registry-server myregistry.azurecr.io
+```
+6. You can create a container app using a YAML file `az containerapp create --yaml <yaml_file_name>`. 
 
 ## Revisions
 1. Use Digest instead of tag for container images if you want to ensure specific version. I.e. `myregistry.azurecr.io/myapp@sha256:<digest>`. Updating is:
@@ -19,7 +34,15 @@ az containerapp update \
   --image <registry>/<repo>@sha256:<digest>
 ```
 2. You can deactivate a revision `az containerapp revision deactivate`. This option is useful when you want to rollback to the previous version.
-3. 
+3. Feature of auto pull from registry `--enable-cd true`. Take note using `latest` image tag does not pull latest and requires restart.
+
+## Image pull behavior
+1. Understanding when App Service pulls images helps you plan for deployment scenarios and troubleshoot issues.
+  - Initial deployment: App Service pulls all image layers when you first deploy the container or change the image reference.
+  - App restart: On restart, **App Service checks for changes and pulls only modified layers**. If the image is unchanged, the cached layers are used.
+  - Scale out: When App Service adds new instances, each instance pulls the image. New instances might need to pull the full image if layers aren't cached on the underlying infrastructure.
+  - Pricing tier changes: Moving to a different pricing tier might allocate new infrastructure, which pulls the image fresh and can affect startup time.
+
 
 ## Ingress
 1. external - internet/outbound traffic enabled.
@@ -162,4 +185,4 @@ az containerapp logs show \
 4. Labelling with `az containerapp revision label add --name <APP_NAME> --resource-group <RESOURCE_GROUP> --revision <REVISION_NAME> --label <LABEL_NAME>`.
 5. Remember you cannot scale specific revision! You need redeployment, hence only the latest version is scaled; and you need to update the traffic control.
 
-[ACA Scale Rules](img/aca-scale-rules.png)
+![ACA Scale Rules](img/aca-scale-rules.png)

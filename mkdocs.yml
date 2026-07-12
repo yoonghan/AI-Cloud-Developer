@@ -29,7 +29,8 @@ nav:
   - Topics:
     - Basic.md
     - AzureContainerRegistry.md
-    - AppServices.md
+    - AzureAppServices.md
+    - AzureContainerApps.md
   - Exam: 
     - Exam_Preparation/Notes.md
     - Exam_Preparation/Labs.md
