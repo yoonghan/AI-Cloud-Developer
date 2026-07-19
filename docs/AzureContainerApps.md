@@ -39,6 +39,7 @@ az containerapp update \
 5. Delete revision `az containerapp revision delete --name <app-name> --resource-group <resource-group> --revision <revision-name>`
 6. Update default replica `az containerapp update --name <app-name> --resource-group <resource-group> --revision <revision-name>`
 7. **Secret** change does not bump revision. You need to update the image to bump revision and also issue `az containerapp revision restart --name <app-name> --resource-group <resource-group>`. However, you can use `az containerapp update --name <app-name> --resource-group <resource-group> --set template.containers[0].env[0].secretRef=<new-secret-ref>` to update the secret reference, and it will bump the revision.
+8. **Keyvault Secret** also does not bump revision, but there is a caveat that there is _cache_ and might not be updated. The best force is to update revision!
 
 ## Image pull behavior
 1. Understanding when App Service pulls images helps you plan for deployment scenarios and troubleshoot issues.
