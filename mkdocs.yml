@@ -32,6 +32,7 @@ nav:
     - AzureAppServices.md
     - AzureContainerApps.md
     - AzureKubernetes.md
+    - AzureFoundry.md
   - Exam: 
     - Exam_Preparation/Notes.md
     - Exam_Preparation/Labs.md
