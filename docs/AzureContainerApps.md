@@ -35,6 +35,10 @@ az containerapp update \
 ```
 2. You can deactivate a revision `az containerapp revision deactivate`. This option is useful when you want to rollback to the previous version.
 3. Feature of auto pull from registry `--enable-cd true`. Take note using `latest` image tag does not pull latest and requires restart.
+4. Check revisions `az containerapp revision list`
+5. Delete revision `az containerapp revision delete --name <app-name> --resource-group <resource-group> --revision <revision-name>`
+6. Update default replica `az containerapp update --name <app-name> --resource-group <resource-group> --revision <revision-name>`
+7. **Secret** change does not bump revision. You need to update the image to bump revision and also issue `az containerapp revision restart --name <app-name> --resource-group <resource-group>`. However, you can use `az containerapp update --name <app-name> --resource-group <resource-group> --set template.containers[0].env[0].secretRef=<new-secret-ref>` to update the secret reference, and it will bump the revision.
 
 ## Image pull behavior
 1. Understanding when App Service pulls images helps you plan for deployment scenarios and troubleshoot issues.
