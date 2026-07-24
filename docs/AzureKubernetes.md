@@ -158,6 +158,17 @@ containers:
     - Azure Container Storage - Requires to be enabled `az aks update -n myAKSCluster -g myResourceGroup --enable-azure-container-storage ephemeralDisk`, then in YAML specify `storagePools` in `storageClass`.
 3. Choose Azure Container Storage for data-heavy AI workloads (like vector databases) because it pools underlying hardware—like lightning-fast local NVMe drives—into a unified, software-defined layer. It also bypasses standard Azure Disk attach/detach bottlenecks, enabling much faster pod failovers and volume scaling across your cluster.
 
+## Advantage over ACA
+1. Complete control over the environment.
+2. Can use any container image.
+3. Can choose VM. AKS allows you to pick the exact Azure VM SKU (e.g., you specifically want Nvidia A100s, V100s, or T4s). ACA gives you "T-shirt sizes" for GPU profiles, which limits your hardware tuning capabilities.
+4. Support different node pools. 
+5. Support CSI storage.
+6. Support dapr.
+
+## Disadvantage compared to ACA
+1. More complicated setup and management.
+
 ## Troubleshooting
 1. Inspect Services using kubectl
 You can use kubectl commands to examine Services in detail:

@@ -30,6 +30,7 @@ nav:
     - Basic.md
     - AzureContainerRegistry.md
     - AzureAppServices.md
+    - AzureContainerInstance.md
     - AzureContainerApps.md
     - AzureKubernetes.md
     - AzureFoundry.md
