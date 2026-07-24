@@ -2,6 +2,65 @@
 
 1. Use AKS for Kubernetes. 
 
+## Authentication to talk with other resources.
+1. Need to use UAMI (User Access Management Identity) for authentication with Azure resources. In this case you need to:
+  - Create a UAMI in Azure Portal. Note its Client ID and Resource ID.
+  - Example UAMI command:
+  ```
+  az identity create --name my-uami --resource-group my-resource-group --location my-location
+  UAMI_CLIENT_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'clientId' -o tsv)
+  UAMI_PRINCIPAL_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'principalId' -o tsv)
+
+  ```
+  - Not required to assign role to UAMI.
+  - Then create a Service Account in the AKS cluster, using the UAMI's Client ID and Resource ID.
+  - Example of Service Account:
+  ```
+  apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    azure.workload.identity/client-id: <UAMI_CLIENT_ID>
+  name: azure-workload-identity
+  namespace: default
+```
+  - Enable workload identity in AKS:
+  ```
+  az aks update \
+  --resource-group myResourceGroup \
+  --name myAKSCluster \
+  --enable-workload-identity \
+  --attach-acr <acr-name>
+
+  - Link the UAMI to the Service Account in AKS:
+  ```
+  AKS_OIDC_ISSUER=$(az aks show --resource-group <resource-group> --name <cluster-name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
+
+az identity federated-credential create \
+  --name <federated-identity-name> \
+  --identity-name <workload-identity-name> \
+  --resource-group <resource-group> \
+  --issuer "$AKS_OIDC_ISSUER" \
+  --subject "system:serviceaccount:<namespace>:<service-account-name>" \
+  --audiences "api://AzureADTokenExchange"
+  ```
+  - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
+  - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
+  
+2. System-assigned managed identity does not work as it does not have Client ID.
+3. Need to use workload identity for authentication with Azure resources.
+4. Service Principal (Client ID + Client Secret) do work, but is not recommended, it can be exposed.
+5. For repository, it needs to be specified in Kubernetes.
+```
+kubectl create secret docker-registry ghcr-secret \
+  --namespace $NAMESPACE \
+  --docker-server=ghcr.io \
+  --docker-username=$GHCR_USERNAME \
+  --docker-password=$GHCR_PASSWORD \
+  --docker-email="noreply@example.com" \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
 ## Service / Virtual Service
 1. To expose, use either Service or Virtual Service. Virtual Service allows you to define traffic management rules, such as routing, load balancing, and circuit breaking. Service is a simpler way to expose a service. Virtual Service is built on top of Service and uses Istio under the hood.
 2. To map service to pod, use labels.
@@ -113,3 +172,34 @@ Selector labels that should match pod labels
 Ports and targetPorts that should align with container ports
 EndpointSlices that list the actual pod IPs that receive traffic
 If a Service has no EndpointSlices, your AI API can't receive traffic even if pods are healthy. Resolving label mismatches or port configuration restores connectivity.
+
+## Thoughts
+Sure! The way Kubernetes handles network traffic can be a bit confusing at first because it uses a layered approach.
+
+Here is the breakdown of Service vs Ingress vs VirtualService, and why the plan uses an Ingress.
+
+1. Kubernetes Service (Layer 4)
+A Service is a core Kubernetes concept used to group your pods together under a single IP address.
+
+ClusterIP (Internal): By default, a Service is internal. It allows App A to talk to App B inside the cluster. (This is what is defined in the service-ingress.yaml artifact).
+LoadBalancer (External): You can expose your app directly to the internet by changing the Service type to LoadBalancer. When you do this, AKS talks to Azure to automatically provision a public Azure Standard Load Balancer.
+The Catch: A Load Balancer operates at Layer 4 (TCP/UDP). It does not understand HTTP. It cannot do URL-based routing (e.g., send /api to one pod and /web to another), it cannot easily handle CORS, and it cannot terminate SSL/HTTPS certificates effectively. Also, if you have 10 apps, you will pay for 10 Public IP addresses.
+2. Kubernetes Ingress (Layer 7) - The Recommended Approach
+An Ingress solves the limitations of the LoadBalancer. It is a "smart router" for HTTP/HTTPS traffic.
+
+In the script, we installed the NGINX Ingress Controller. This controller creates one Azure Load Balancer with one Public IP.
+The Ingress YAML you deploy acts as the configuration rulebook for NGINX.
+Why we use it: It operates at Layer 7. It understands hostnames (www.walcron.com), URL paths, and can terminate SSL certificates. Most importantly for your app, we can use Ingress annotations (like nginx.ingress.kubernetes.io/enable-cors: "true") to perfectly replicate the CORS rules you had set up in your Azure Container App environment!
+3. VirtualService (Istio / Service Mesh)
+I saw your note in AzureKubernetes.md about VirtualService. It is important to clarify: A VirtualService is not a native Kubernetes object.
+
+It is a custom resource that only exists if you install a Service Mesh called Istio into your cluster.
+If you use Istio, you replace the NGINX Ingress Controller with an Istio Gateway, and you replace the Ingress YAML with a VirtualService YAML.
+Why use VirtualService? It is incredibly powerful. It allows for advanced traffic management like sending 90% of traffic to v1 of your app and 10% to v2 (Canary deployments), automatic retries, and circuit breakers.
+Should you use it? Since you are already using Dapr, I recommend against using Istio right now. Dapr and Istio overlap significantly. Dapr already handles service-to-service mTLS encryption, observability, and retries. Running both Dapr and a Service Mesh like Istio at the same time is extremely complex and usually overkill unless you have a massive enterprise microservice architecture.
+Summary
+To directly answer your question:
+
+Can you use a Service to expose it? Yes (using type: LoadBalancer), but you lose CORS, SSL termination, and path-based routing. It's too basic for web apps.
+Can you use a VirtualService? Yes, but it requires installing Istio, which is very complex and overlaps with your existing Dapr setup.
+Why Ingress? It is the sweet spot. It provides the exact Layer 7 HTTP routing, CORS support, and SSL capabilities that your Azure Container App was giving you out of the box, without the overhead of a full Service Mesh.
