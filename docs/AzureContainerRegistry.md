@@ -42,6 +42,9 @@ az acr task create \
 #   - push:
 #     - {{.Run.Registry}}/inference-api:{{.Run.ID}}
 #   - cmd: {{.Run.Registry}}/inference-api:{{.Run.ID}} python -m pytest tests/
+# Or multistep
+#   - cmd: docker run -d --name test {{.Run.Registry}}/hello-world:{{.Run.ID}}
+#   - cmd: docker stop test
 ```
 
 ## Versioning
