@@ -46,7 +46,25 @@ az identity federated-credential create \
   ```
   - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
   - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
-  
+  - Bind pod with the service-account
+  ```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: study-buddy-api
+  namespace: ai-workloads
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: study-buddy
+        # 1. REQUIRED: Triggers the AKS webhook to inject the tokens
+        azure.workload.identity/use: "true" 
+    spec:
+      # 2. REQUIRED: Run as the ServiceAccount we annotated in Step 1
+      serviceAccountName: study-buddy-sa
+  ```
 2. System-assigned managed identity does not work as it does not have Client ID.
 3. Need to use workload identity for authentication with Azure resources.
 4. Service Principal (Client ID + Client Secret) do work, but is not recommended, it can be exposed.
@@ -168,6 +186,56 @@ containers:
 
 ## Disadvantage compared to ACA
 1. More complicated setup and management.
+
+## Scaling
+1. Horizontal pod autoscaling. Not great it only checks on health and CPU/Memory usage and not based on external events.
+```bash
+kubectl apply -f hpa-scale-up.yaml
+```
+2. KEDA scaler (this does not include authentication, to allow authentication you need TriggerAuthentication/Subscription)
+```bash
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: queue-scaler
+  namespace: ai-workloads
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-api
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: azure-queue
+    metadata:
+      queueName: ai-tasks
+      queueLength: "10"
+      connectionStringFromEnv: QUEUE_CONNECTION_STRING
+```
+3. This is a trigger authentication, the namespace must be the same as ScaledObject.
+```bash
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: azure-queue-auth
+  namespace: ai-workloads       # Must be in the same namespace as the ScaledObject
+spec:
+  podIdentity:
+    provider: azure-workload
+    identityId: "11111111-2222-3333-4444-555555555555" # The Client ID of your UAMI
+```
+4. But this is only a part, you also need to add authentication to KEDA in the federated credentials.
+```bash
+az identity federated-credential create \
+  --name "keda-queue-scaler-auth" \
+  --identity-name "my-uami-name" \
+  --resource-group "my-rg" \
+  --issuer "<AKS-OIDC-ISSUER-URL>" \
+  --subject "system:serviceaccount:keda:keda-operator" \
+  --audience "api://AzureADTokenExchange"
+```
+
 
 ## Troubleshooting
 1. Inspect Services using kubectl

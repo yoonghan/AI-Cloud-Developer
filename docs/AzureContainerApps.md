@@ -165,7 +165,17 @@ az containerapp create \
   - Redis Stream Scaling - Redis length
 2. Can use Managed identity.
 3. Properties to be aware of:
-  - --scale-rule-auth  = authorization
+  - --scale-rule-auth "connection=my-queue-connection-string-secret" = method to use connection string to queue or event bus
+  - --scale-rule-identity = preferred way
+  ```bash
+  az containerapp update \
+  --name "ai-200-study-buddy" \
+  --resource-group "my-rg" \
+  --scale-rule-name "queue-scaler" \
+  --scale-rule-type "azure-servicebus" \
+  --scale-rule-metadata "namespace=my-service-bus-namespace" "queueName=ai-tasks" "messageCount=10" \
+  --scale-rule-identity "system"
+  ```
   - `min-replicas` and `max-replicas` default to 1.
 4. Can use yaml.
 5. To see replicas use `az containerapp replica list -n N -g G`.
