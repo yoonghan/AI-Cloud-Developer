@@ -52,13 +52,15 @@ az containerapp update \
 ## Ingress
 1. external - internet/outbound traffic enabled.
 2. internal - no out bound traffic to external.
-3. Code
+3. Deploy both containers to the same ACA Environment if there is a frontend and backend; with frontend communicating with backend without using internet, i.e. it is faster and more secure. Enable External Ingress on the Frontend app, and enable Internal Ingress on the Backend app.
+4. Code:
 
 ```bash
 az containerapp update \
     --name myapp \
     --resource-group myresourcegroup \
     --ingress external \
+    #--ingress internal \ then use properties.configuration.ingress.fqdn in frontend config to connect to backend.
     --target-port 8080 \
     --registry-server myregistry.azurecr.io
 ```
@@ -153,7 +155,7 @@ az containerapp create \
 ### Scaling Rules 
 1. Works via KEDA - Kubernetes Event-driven Autoscaling.
 2. Rules:
-  - HTTP Scaling - concurrent requests per container
+  - HTTP Scaling - concurrent requests per container. [IMPORTANT] Jobs cannot be triggered via HTTP, use cron or events.
   - CPU/Memory Scaling - based on cpu/memory utilization percentage
   - KEDA Scaling - External Scaling
   - Azure Service Bus Scaling - topic name + queue name + queue length

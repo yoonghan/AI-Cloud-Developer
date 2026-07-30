@@ -1,5 +1,9 @@
 # Azure Container Registry (ACR)
 
+## SKU Tiers
+1. Just remember only Premium tier allows geo-replication and private network access.
+2. Basic and Standard are the same aside from storage factor. see [link](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-skus)
+
 ## Authentication options
 1. System-assigned managed identity for ACR
 2. User-assigned managed identity for ACR
@@ -77,3 +81,7 @@ az acr task create \
   --schedule "0 0 * * 0" \
   --context /dev/null
 ```
+
+## Security
+1. Enable Microsoft Defender for Containers at the subscription level to automatically trigger vulnerability scans upon image push.
+2. Use private endpoint for ACR to prevent public access. Requires premium tier.

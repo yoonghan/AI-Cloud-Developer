@@ -77,6 +77,9 @@ kubectl create secret docker-registry ghcr-secret \
   --docker-password=$GHCR_PASSWORD \
   --docker-email="noreply@example.com" \
   --dry-run=client -o yaml | kubectl apply -f -
+
+#or 
+az aks update --resource-group rg --name myAKS --attach-acr myacr
 ```
 
 ## Service / Virtual Service
@@ -168,6 +171,13 @@ containers:
     mountPath: /app/config
     readOnly: true
 ```
+
+## Connecting to ACR
+1. Requires ACR to be attached to the AKS cluster using `az aks update --resource-group rg --name myAKS --attach-acr myacr` or use the Azure Container Registry task to build the image and push it to ACR. In the Exam, you will not be able to connect to ACR, so you need to use Azure Container Registry task to build the image and push it to ACR.
+2. Kubernetes needs to be allowed to pull image from ACR. Use `az aks update --name <aks-name> --resource-group <resource-group> --attach-acr <acr-name>`. Behind the hood with '--attach-acr' it does:
+    - It looks up the Kubelet Managed Identity (or Service Principal) that is attached to your AKS agent nodes.
+    - It goes to your Azure Container Registry.
+    - It creates an Azure RBAC role assignment, granting the "AcrPull" role to the AKS Kubelet identity, scoped to that specific registry.
 
 ## Storage
 1. Link [here](https://learn.microsoft.com/en-us/training/modules/store-data-azure-kubernetes-service/2-define-storage?pivots=text)
