@@ -34,6 +34,8 @@ nav:
     - AzureContainerApps.md
     - AzureKubernetes.md
     - AzureFoundry.md
+  - Storage:
+    - Storage/CosmosDb.md
   - Exam: 
     - Exam_Preparation/Notes.md
     - Exam_Preparation/Labs.md
