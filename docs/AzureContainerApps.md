@@ -171,13 +171,20 @@ az containerapp create \
   - --scale-rule-auth "connection=my-queue-connection-string-secret" = method to use connection string to queue or event bus
   - --scale-rule-identity = preferred way
   ```bash
-  az containerapp update \
-  --name "ai-200-study-buddy" \
+  az containerapp job create \
+  --name "my-event-job" \
   --resource-group "my-rg" \
-  --scale-rule-name "queue-scaler" \
-  --scale-rule-type "azure-servicebus" \
-  --scale-rule-metadata "namespace=my-service-bus-namespace" "queueName=ai-tasks" "messageCount=10" \
-  --scale-rule-identity "system"
+  --environment "my-environment" \
+  --image "myregistry.azurecr.io/processor:v1" \
+  --trigger-type "Event" \
+  --replica-timeout 600 \
+  --polling-interval 30 \
+  --min-executions 0 \
+  --max-executions 10 \
+  --scale-rule-name "queue-trigger" \
+  --scale-rule-type "azure-queue" \
+  --scale-rule-metadata "accountName=mystorageaccount" "queueName=tasks" "queueLength=1" \
+  --scale-rule-auth "connection=storage-connection-secret"
   ```
   - `min-replicas` and `max-replicas` default to 1.
 4. Can use yaml.
@@ -195,6 +202,19 @@ az containerapp logs show \
   --follow true
 ```
 7. [link](https://learn.microsoft.com/en-us/training/modules/scale-containers-azure-container-apps/4-keda-scalers-custom-workloads?pivots=text)
+8. You can create jobs with
+```
+az containerapp job create \
+  --name "daily-five-pm-job" \
+  --resource-group "MyResourceGroup" \
+  --environment "MyContainerAppEnv" \
+  --trigger-type "Cron" \
+  --cron-expression "0 17 * * *" \
+  --replica-timeout 1800 \
+  --replica-retry-limit 1 \
+  --image "myregistry.azurecr.io/my-task-image:latest" \
+  --cpu "0.5" --memory "1.0Gi"
+  ```
 
 ### Traffic Management
 1. To have traffic-based scaling, enable `--revision-mode multiple`. Example `--revision-weight order-api--v1=80 order-api--v2=20`.
