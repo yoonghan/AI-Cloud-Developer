@@ -67,6 +67,7 @@ az containerapp update \
 
 ## Registry authentication
 1. Similar to Azure App Service, ACA uses managed identity or service principal for registry authentication.
+2. Note any application that uses UAMI (not system managed identity), a CLIENT_ID needs to be provided via environment variable. You MUST set the AZURE_CLIENT_ID environment variable in your Container App. Why? Because a single Container App can have multiple User-Assigned Identities attached to it. When your code calls new DefaultAzureCredential(), it uses that variable to know which specific identity it should request an Entra ID token for.
 
 ## Revisions
 1. Change in condition of:
