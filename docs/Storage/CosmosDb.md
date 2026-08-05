@@ -184,3 +184,4 @@ ORDER BY RANK RRF(
 4. OpenAI uses distanceFunction of "cosine" and float 32. An embedding model always outputs a vector array of a very specific length.
     - 1536 is the famous, hardcoded dimension size for text-embedding-ada-002 (and the newer text-embedding-3-small). If you see ada-002 on an exam, immediately look for the number 1536.
     - Choice C lists 3072 dimensions. This is the exact dimension size for OpenAI's newer, larger model: text-embedding-3-large. The exam writers put this here to trick people who confuse the different OpenAI models.
+5. Continous backup allows restore point in time, periodic backup requires support team.
