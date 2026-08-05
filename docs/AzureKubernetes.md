@@ -262,6 +262,32 @@ Ports and targetPorts that should align with container ports
 EndpointSlices that list the actual pod IPs that receive traffic
 If a Service has no EndpointSlices, your AI API can't receive traffic even if pods are healthy. Resolving label mismatches or port configuration restores connectivity.
 
+## Need to read
+1) AKS security & best practices (Microsoft)
+  - https://learn.microsoft.com/azure/aks/security-best-practices
+  - https://learn.microsoft.com/azure/aks/use-azure-policy
+2) AKS and Azure networking
+  - Azure CNI & networking for AKS: https://learn.microsoft.com/azure/aks/configure-azure-cni
+  - Azure Firewall overview: https://learn.microsoft.com/azure/firewall/overview
+  - Azure NAT Gateway: https://learn.microsoft.com/azure/virtual-network/nat-gateway/nat-overview
+3) Core Kubernetes primitives (official k8s docs)
+  - Namespaces: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+  - RBAC: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+  - ResourceQuota: https://kubernetes.io/docs/concepts/policy/resource-quotas/
+  - LimitRange: https://kubernetes.io/docs/concepts/policy/limit-range/
+  - NetworkPolicy: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+  - Taints & Tolerations: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  - Pod Security Admission & Pod Security Standards: https://kubernetes.io/docs/concepts/security/pod-security-admission/ and https://kubernetes.io/docs/concepts/security/pod-security-standards/
+4) Network plugin / egress controls
+  - Project Calico (network policies & egress support): https://docs.projectcalico.org/
+5) Admission/Policy engines (enforcement)
+  - Azure Policy + Gatekeeper for AKS: https://learn.microsoft.com/azure/aks/gatekeeper-overview and https://learn.microsoft.com/azure/aks/use-azure-policy
+  - Open Policy Agent Gatekeeper: https://open-policy-agent.github.io/gatekeeper/ (policy examples)
+  - Kyverno (policy engine that many teams prefer for Kubernetes-native policies): https://kyverno.io/
+6) Image registry / ACR guidance
+  - Azure Container Registry docs: https://learn.microsoft.com/azure/container-registry/
+  - Enforce allowed registries via admission controllers (Gatekeeper/Kyverno policy examples) — see Kyverno/Gatekeeper examples pages.
+
 ## Thoughts
 Sure! The way Kubernetes handles network traffic can be a bit confusing at first because it uses a layered approach.
 
@@ -292,3 +318,4 @@ To directly answer your question:
 Can you use a Service to expose it? Yes (using type: LoadBalancer), but you lose CORS, SSL termination, and path-based routing. It's too basic for web apps.
 Can you use a VirtualService? Yes, but it requires installing Istio, which is very complex and overlaps with your existing Dapr setup.
 Why Ingress? It is the sweet spot. It provides the exact Layer 7 HTTP routing, CORS support, and SSL capabilities that your Azure Container App was giving you out of the box, without the overhead of a full Service Mesh.
+
