@@ -36,6 +36,10 @@ nav:
     - AzureFoundry.md
   - Storage:
     - Storage/CosmosDb.md
+    - Storage/Postgresql.md
+  - General:
+    - General/ArtificialIntelligence.md
+    - General/AzureConative.md
   - Exam: 
     - Exam_Preparation/Notes.md
     - Exam_Preparation/Labs.md
