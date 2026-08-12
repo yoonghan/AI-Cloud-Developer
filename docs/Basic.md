@@ -33,3 +33,9 @@ const client = new AppConfigurationClient(endpoint, new DefaultAzureCredential()
   audience: KnownAppConfigAudience.AzureChina,
 });
 ```
+
+## Python codes
+
+Concept | Python Representation | Purpose
+--- | --- | ---
+Null Object | None | Represents missing, empty, or unassigned data.Null Character | '\0' | A specific character byte with the numeric value of 0.Empty String | "" | A string object containing zero characters.
