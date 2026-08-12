@@ -37,6 +37,9 @@ nav:
   - Storage:
     - Storage/CosmosDb.md
     - Storage/Postgresql.md
+  - Configuration:
+    - Configuration/AppConfiguration.md
+    - Configuration/KeyVault.md
   - General:
     - General/ArtificialIntelligence.md
     - General/AzureConative.md

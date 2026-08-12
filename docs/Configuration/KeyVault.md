@@ -1,4 +1,4 @@
-# KeyVault
+# Key Vault
 1. You cannot change retention period of soft delete once created.
 2. Read limit is 4000/s, write is 300/s
 
