@@ -39,3 +39,10 @@ const client = new AppConfigurationClient(endpoint, new DefaultAzureCredential()
 Concept | Python Representation | Purpose
 --- | --- | ---
 Null Object | None | Represents missing, empty, or unassigned data.Null Character | '\0' | A specific character byte with the numeric value of 0.Empty String | "" | A string object containing zero characters.
+
+## Network
+1. Application Gateway WAF is for HTTP(S) application-layer protection.
+
+## Monitor
+1. Azure Monitor includes Log Analytics and Application Insights.
+2. Azure Monitor can collect all metrics. I.e. metrics of every single VM can be shown under Azure Monitor.

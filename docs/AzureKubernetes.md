@@ -287,6 +287,8 @@ If a Service has no EndpointSlices, your AI API can't receive traffic even if po
 6) Image registry / ACR guidance
   - Azure Container Registry docs: https://learn.microsoft.com/azure/container-registry/
   - Enforce allowed registries via admission controllers (Gatekeeper/Kyverno policy examples) — see Kyverno/Gatekeeper examples pages.
+7) Security Policy
+  - https://learn.microsoft.com/en-us/azure/aks/network-policy-best-practices
 
 ## Thoughts
 Sure! The way Kubernetes handles network traffic can be a bit confusing at first because it uses a layered approach.
