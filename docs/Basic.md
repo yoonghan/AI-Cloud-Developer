@@ -46,3 +46,20 @@ Null Object | None | Represents missing, empty, or unassigned data.Null Characte
 ## Monitor
 1. Azure Monitor includes Log Analytics and Application Insights.
 2. Azure Monitor can collect all metrics. I.e. metrics of every single VM can be shown under Azure Monitor.
+3. Log Analytics have a subset "Log Workspace". This might be confusing but all the table & retention are stored here. So a table "dependencies" are alias to actual table "AppDependencies" in Log Workspace. 1 App Workspace can have many Insights but not the other way.
+
+       ┌─────────────────────────────────────────────────────────┐
+       │                      AZURE MONITOR                      │
+       │                  (The Whole Ecosystem)                  │
+       └────────────────────────────┬────────────────────────────┘
+                                    │
+                  ┌─────────────────┴─────────────────┐
+                  ▼                                   ▼
+        Application Insights                Other Sources (VMs,
+        (Frontend Lens/APM)                 Kubernetes, Firewalls)
+                  │                                   │
+                  └─────────────────┬─────────────────┘
+                                    │ (Streams logs to)
+                                    ▼
+                        Log Analytics Workspace
+                          (Backend Database)
