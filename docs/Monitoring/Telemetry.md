@@ -18,7 +18,6 @@
     * Trace flags (01): Indicates the trace is sampled.
 3. _tracestate_ header contains additional tracing information that can be used by other tracing systems.
 
-
 ## Application Insight
 OpenTelemetry concept | Python equivalent | Application Insights term
 --- | --- | --- 
@@ -114,11 +113,14 @@ exporters:
   azuremonitor: # Why not applicationinsights?
     connection_string: "InstrumentationKey=12345..."    
 ```
+5. Sampling, why item(count)
+```
+In the Azure Portal, go to your Container App -> Containers -> Edit and deploy -> Environment variables, and add:
 
+Name: APPLICATIONINSIGHTS_SAMPLING_PERCENTAGE
 
-## Shared AKS.
-1. The best way, unlike ACA or Function is to create an OTEL collector.
-2. Use OTEL Collector to authenticate(if required) and send to application insights.
+Value: 100 (to disable sampling and keep everything) or 50 (to keep 50% of traffic).
+```
 
 ## Others
 1. Monkey patching = auto instrumentation. E.g. import a otel http library and any http calls are logged automatically.
@@ -128,3 +130,41 @@ exporters:
 5. Sampling type. Can use OTEL_TRACES_SAMPLER_ARG + OTEL_TRACES_SAMPLER
     - maxTracesPerSecond: 10 (rate limiting by time)
     - samplingRatio: 0.1 (default is 1.0), uses complex hash to know when to sample; statistically 10 in 100.
+
+## Sampling
+1. Using sum(itemCount), not count() when using sampling count in Application Insight.
+
+```sql
+exceptions
+| summarize 
+    StoredRows_Count = count(), 
+    ActualExceptions_Sum = sum(itemCount)
+
+
+requests
+| where timestamp > ago(24h)
+| summarize 
+    StoredRequests_Count = count(), 
+    ActualRequests_Sum = sum(itemCount) 
+    by success
+```
+
+How Sampling Changes the Math
+When your application generates high volumes of telemetry, Application Insights uses sampling to reduce costs and network traffic. This means it doesn't send every single exception to the cloud. Instead, it drops some events and only keeps a representative sample.
+
+To make up for the dropped data, Application Insights automatically calculates a weight for the events it does keep and stores that weight in a property called itemCount.
+
+For example, if your sampling rate is 10% (meaning 9 out of 10 exceptions are discarded):
+
+The 1 exception that actually gets saved to your Log Analytics workspace will have an itemCount of 10.
+
+This tells the system: "This single row represents 10 exceptions that actually occurred."
+
+Comparing the Approaches
+Because of this mechanism, the two KQL functions do very different things:
+
+count() counts the rows in the database. If 100 exceptions occurred but your sampling rate is 10%, count() will return 10. It only tells you how many records were physically stored, ignoring the dropped data.
+
+sum(itemCount) counts the actual events. It adds up the representative weights. In that same scenario, it adds up the itemCount of 10 for each of the 10 stored rows (10 x 10), returning 100. This gives you the accurate, real-world total of exceptions that your application threw.
+
+(Note: If sampling is completely disabled, itemCount is simply 1 for every record, meaning count() and sum(itemCount) will return the exact same number.)

@@ -40,6 +40,8 @@ nav:
   - Configuration:
     - Configuration/AppConfiguration.md
     - Configuration/KeyVault.md
+  - Monitoring:
+    - Monitoring/Telemetry.md
   - General:
     - General/ArtificialIntelligence.md
     - General/AzureConative.md
