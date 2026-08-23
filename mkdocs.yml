@@ -37,6 +37,7 @@ nav:
   - Storage:
     - Storage/CosmosDb.md
     - Storage/Postgresql.md
+    - Storage/Redis.md
   - Configuration:
     - Configuration/AppConfiguration.md
     - Configuration/KeyVault.md

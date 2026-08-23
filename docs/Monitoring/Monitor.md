@@ -1,6 +1,25 @@
-# Monitor
+# Azure Monitor
 
 Read [link](https://yoonghan.github.io/AZ-104-Azure-Administrator-Associate/Monitoring/).
+
+1. Azure Monitor can collect all metrics. I.e. metrics of every single VM can be shown under Azure Monitor.
+2. Log Analytics have a subset "Log Workspace". This might be confusing but all the table & retention are stored here. So a table "dependencies" are alias to actual table "AppDependencies" in Log Workspace. 1 App Workspace can have many Insights but not the other way.
+
+       ┌─────────────────────────────────────────────────────────┐
+       │                      AZURE MONITOR                      │
+       │                  (The Whole Ecosystem)                  │
+       └────────────────────────────┬────────────────────────────┘
+                                    │
+                  ┌─────────────────┴─────────────────┐
+                  ▼                                   ▼
+        Application Insights                Other Sources (VMs,
+        (Frontend Lens/APM)                 Kubernetes, Firewalls)
+                  │                                   │
+                  └─────────────────┬─────────────────┘
+                                    │ (Streams logs to)
+                                    ▼
+                        Log Analytics Workspace
+                          (Backend Database)
 
 ## Azure Monitor Workbooks
 Azure Monitor Workbooks provide a flexible canvas for data analysis and the creation of rich visual reports within the Azure portal. They allow you to combine text, log queries (KQL), metrics, and parameters into interactive, shared reports.

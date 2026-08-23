@@ -31,6 +31,21 @@ token = credential.get_token("https://ossrdbms-aad.database.windows.net/.default
     2.1 The Good: If a connection is already open, PostgreSQL does not drop the active connection when the token expires.
     2.2 The Bad: If your application uses a Connection Pool (like PgBouncer or SQLAlchemy's connection pool), and the pool tries to open a new physical connection to the database 2 hours later using that original connection string, it will fail with an authentication error.
     2.3 To prevent this, must ensure your code fetches a fresh token via credential.get_token()
+3. 3 roles - Owner, Contributor and Reader.
+4. Data access layer permission is controlled in DB. 
+```sql
+CREATE ROLE reader_user WITH LOGIN PASSWORD 'secure_password';
+-- Grant read-only access to a specific table
+GRANT SELECT ON documents TO reader_user;
+-- Grant full read/write access to a table
+GRANT SELECT, INSERT, UPDATE, DELETE ON documents TO app_writer_role;
+-- Enable RLS on the table
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+-- Create a policy where users can only see their own rows
+CREATE POLICY user_isolation_policy ON documents 
+    FOR SELECT 
+    USING (user_id = current_setting('app.current_user_id'));
+```   
 
 ## SSL modes
 1. disable: No encryption. Azure rejects connections using this mode.
