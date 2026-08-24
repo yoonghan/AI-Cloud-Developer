@@ -27,7 +27,7 @@ async function main() {
         console.error('Error executing Redis commands:', err);
     } finally {
         // 5. Always disconnect gracefully when finished
-        await client.quit();
+        await client.destroy();
         console.log('Disconnected from Redis.');
     }
 }
@@ -87,7 +87,7 @@ async function mainMultiKeySample() {
     } catch (err) {
         console.error('Error executing Redis commands:', err);
     } finally {
-        await client.quit();
+        await client.destroy();
         console.log('Disconnected from Redis.');
     }
 }
@@ -137,7 +137,7 @@ async function mainHashSample() {
     } catch (err) {
         console.error('Error executing Redis commands:', err);
     } finally {
-        await client.quit();
+        await client.destroy();
         console.log('\nDisconnected from Redis.');
     }
 }
@@ -191,7 +191,7 @@ async function mainExpireSample() {
     } catch (err) {
         console.error('Error executing Redis commands:', err);
     } finally {
-        await client.quit();
+        await client.destroy();
         console.log('Disconnected from Redis.');
     }
 }

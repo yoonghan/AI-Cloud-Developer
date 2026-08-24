@@ -1,4 +1,5 @@
 # Azure Redis
+1. Port 10000 for TLS, 6739 for HTTP.
 
 ## Cache
 1. Data cache
@@ -50,4 +51,12 @@
     - ttl: To check when it expires. r.ttl('user:1002:preferences')
     - persist: To make the key persistent. r.persist('user:1002:preferences')
     
-    
+## Notes
+1. Use SCAN, Not KEYS (see demonstration).
+2. Specialized Scan Commands
+    - HSCAN: Iterates through fields and values inside a specific Hash.SSCAN: Iterates through elements inside a specific Set.
+    - ZSCAN: Iterates through elements and scores inside a Sorted Set.
+3. Key Management & Safety Commands
+    - TYPE key: Checks a key's data type before you accidentally run a heavy command on it.
+    - MEMORY USAGE key: Reports how much RAM a specific key consumes to find memory hogs.
+    - TTL key: Checks how many seconds a key has left before it automatically expires.- FLUSHDB ASYNC: Clears the current database without blocking the server (unlike standard FLUSHDB).
