@@ -196,8 +196,114 @@ async function mainExpireSample() {
     }
 }
 
+async function testEviction() {
+    const client = createClient({ url: 'redis://localhost:6379' });
+    await client.connect();
 
-main();
-mainMultiKeySample();
-mainHashSample();
-mainExpireSample()
+    try {
+        console.log('--- Configured Eviction Test ---');
+
+        // 1. Temporarily restrict Redis maxmemory to 2 Megabytes
+        await client.configSet('maxmemory', '3mb');
+
+        // 2. Set policy to LRU (Least Recently Used across all keys)
+        await client.configSet('maxmemory-policy', 'allkeys-lru');
+
+        // 3. Write a key early on
+        await client.set('early_key', 'Important Data that won\'t be read again');
+        console.log('Set "early_key".');
+
+        // 4. Fill memory with large payload strings to trigger maxmemory limit
+        const largePayload = 'X'.repeat(100 * 1024); // 100 KB string
+        console.log('Writing 40 large keys to force memory limit...');
+
+        for (let i = 0; i < 40; i++) {
+            await client.set(`filler_key:${i}`, largePayload);
+        }
+
+        // 5. Try to read the initial key again
+        const earlyValue = await client.get('early_key');
+
+        if (earlyValue === null) {
+            console.log('SUCCESS: "early_key" was automatically evicted by LRU!');
+        } else {
+            console.log('Result: "early_key" still exists (memory threshold not breached yet).');
+        }
+
+        //Bad ways, should use SCAN
+        const allUserKeys = await client.keys('filler_key:*');
+        console.log('Remains filler_key:', allUserKeys);
+
+
+
+    } catch (err) {
+        console.error('Error:', err);
+    } finally {
+        // Reset maxmemory config back to 0 (unlimited)
+        await client.configSet('maxmemory', '0');
+        await client.configSet('maxmemory-policy', 'noeviction');
+        await client.destroy();
+    }
+}
+
+async function testListOperations() {
+    const client = createClient({ url: 'redis://localhost:6379' });
+    await client.connect();
+
+    const listKey = 'demo:task_queue';
+
+    try {
+        // Cleanup previous test data
+        await client.del(listKey);
+
+        console.log('--- 1. Pushing Items into List ---');
+        // LPUSH adds items to the front (Left side)
+        // List order will become: ['job3', 'job2', 'job1']
+        await client.lPush(listKey, 'job1');
+        await client.lPush(listKey, 'job2');
+        await client.lPush(listKey, 'job3');
+
+        // RPUSH adds item to the end (Right side)
+        // List order becomes: ['job3', 'job2', 'job1', 'job4']
+        await client.rPush(listKey, 'job4');
+
+        // 2. Read all items in the list without removing them
+        const allItems = await client.lRange(listKey, 0, -1);
+        console.log('Current List Contents (Head to Tail):', allItems);
+        // Output: [ 'job3', 'job2', 'job1', 'job4' ]
+
+        console.log('\n--- 2. Popping Items from List ---');
+
+        // LPOP removes from the Head (Left) -> Returns 'job3'
+        const leftItem = await client.lPop(listKey);
+        console.log('LPOP (Left / Head):', leftItem);
+
+        // RPOP removes from the Tail (Right) -> Returns 'job4'
+        const rightItem = await client.rPop(listKey);
+        console.log('RPOP (Right / Tail):', rightItem);
+
+        // 3. Inspect remaining items
+        const remainingItems = await client.lRange(listKey, 0, -1);
+        console.log('Remaining List Contents:', remainingItems);
+        // Output: [ 'job2', 'job1' ]
+
+        // 4. Get List Length
+        const length = await client.lLen(listKey);
+        console.log('List length:', length);
+
+    } catch (err) {
+        console.error('Error during list operations:', err);
+    } finally {
+        await client.del(listKey);
+        await client.destroy();
+    }
+}
+
+
+// main();
+// mainMultiKeySample();
+// mainHashSample();
+// mainExpireSample();
+
+// testEviction();
+testListOperations();
