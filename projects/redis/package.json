@@ -8,6 +8,7 @@
     "dev": "tsx watch src/index.ts",
     "demo": "tsx watch src/demonstration.ts",
     "stream": "tsx watch src/stream/index.ts",
+    "ai": "tsx watch src/ai/index.ts",
     "build": "tsc"
   },
   "dependencies": {

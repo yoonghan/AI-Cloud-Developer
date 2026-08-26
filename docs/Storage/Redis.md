@@ -149,6 +149,147 @@ XADD (Created) -> XREADGROUP (Worker 1 reads, enters PEL) -> Worker 1 crashes wi
   - Instant Wake-Up: The exact millisecond a producer drops a new job into the list using LPUSH, Redis instantly wakes the sleeping worker and hands it the data.
   - Timeouts: It accepts a timeout parameter (e.g., blocking for 5 seconds before waking up to report null, or 0 to block infinitely until a job arrives).
 
+## Pipeline vs Transaction
+Pipeline improves performance. But using pipe will not guarantee atomicity. i.e., server crash between two commands in the pipeline will leave partial commands processed. Use Transaction to guarantee atomicity. But use pipeline to improve the performance.
+
+```javascript
+const vectorDataList = [
+  { id: 'doc:101', topic: 'Cosmos DB', text: 'DiskANN vector search' },
+  { id: 'doc:102', topic: 'PostgreSQL', text: 'pgvector extension' },
+  { id: 'doc:103', topic: 'Redis', text: 'HNSW in-memory vector index' },
+];
+
+// 1. Start a Multi/Pipeline chain
+const chain = client.multi(); //In PYTHON this is pipeline()
+
+// 2. Queue multiple operations in memory without awaiting each network call
+for (const item of vectorDataList) {
+  chain.hSet(item.id, {
+    topic: item.topic,
+    text: item.text,
+  });
+}
+
+// 3. Send all queued commands in a single network flush
+const results = await chain.execAsPipeline();
+// also possible using javascript Promise.all([hset, hset, hset...])
+// If use atomiticity
+// const results = await chain.exec();
+console.log('Pipelined batch complete. Responses:', results);
+```
+2. Transaction
+```javascript
+const currentStatus = await client.get('user:session:101');
+
+if (currentStatus === 'active') {
+  // Execute transaction atomically
+  const results = await client
+    .multi()
+    .set('user:session:101', 'busy')
+    .hSet('user:session:101:meta', { lastActive: Date.now() })
+    .exec();
+  
+  // If another client modified 'user:session:101' while watching, 
+  // exec() returns null and the transaction aborts safely.
+  if (results === null) {
+    console.log('Transaction aborted: Key was modified by another client!');
+  }
+} else {
+  await client.unwatch();
+}
+```
+3. There is no rollback concept.
+
+## Hash vs Json
+1. Hash is flat and faster
+```
+embedding = np.array([0.1, 0.2, 0.3, ...], dtype=np.float32)
+
+redis_client.hset(
+    "product:12345",
+    mapping={
+        "name": "Wireless Mouse",
+        "price": "29.99",
+        "category": "electronics",
+        "embedding": embedding.tobytes()  # Store vector as bytes
+    }
+)
+
+schema = (
+    TextField("name"),
+    NumericField("price"),
+    TextField("category"),
+    VectorField("embedding", "HNSW", {
+        "TYPE": "FLOAT32",
+        "DIM": 1536,
+        "DISTANCE_METRIC": "COSINE"
+    })
+)
+
+redis_client.ft("idx:products").create_index(
+    fields=schema,
+    definition=IndexDefinition(
+        prefix=["product:"],
+        index_type=IndexType.HASH
+    )
+)
+```
+2. JSON is more flexible
+```
+redis_client.json().set(
+    "product:12345",
+    "$",
+    {
+        "name": "Wireless Mouse",
+        "price": 29.99,
+        "category": "electronics",
+        "specs": {
+            "color": "black",
+            "dpi": 1600
+        },
+        "embedding": embedding.tobytes()
+    }
+)
+```
+3. Choose Hash when:
+    - Each item has simple, flat fields
+    - You prioritize memory efficiency
+    - You need maximum query speed
+    - Your data model won't need nested objects
+    - Vector storage is binary bytes
+4. Choose JSON when:
+    - Your data has nested structures
+    - You need to store multiple vectors per item
+    - Your application already uses JSON
+    - Flexibility is more important than raw performance
+    - Vector storage is numeric array
+
+## AI Query
+1. Use KNN
+```python
+query = (
+    Query("*=>[KNN 5 @embedding $query_vec AS score]")
+    .return_fields("title", "content", "score")
+    .sort_by("score")
+    .dialect(2)
+)
+
+hybrid_query = Query(
+    "@category:{documentation}=>[KNN 3 @embedding $query_vec AS score]"
+).return_fields("title", "category", "score").sort_by("score").dialect(2)
+
+range_query = Query(
+    "@embedding:[VECTOR_RANGE 0.2 $query_vec]=>{$YIELD_DISTANCE_AS: score}"
+).return_fields("title", "score").sort_by("score").dialect(2)
+```
+2. Distance metrics
+    - COSINE: Use for text embeddings (OpenAI, Cohere, Sentence Transformers)
+    - L2: Use for image embeddings and spatial data
+    - IP: Use only for pre-normalized embeddings
+3. `EF_RUNTIME`, controls how many graph nodes Redis examines during search—higher values mean more thorough exploration and better accuracy, but slower queries.
+```python
+query = Query("*=>[KNN 10 @embedding $query_vec EF_RUNTIME 200 AS score]")
+```
 
 ## Notes
 1. Use SCAN, Not KEYS (see demonstration).
@@ -159,3 +300,42 @@ XADD (Created) -> XREADGROUP (Worker 1 reads, enters PEL) -> Worker 1 crashes wi
     - TYPE key: Checks a key's data type before you accidentally run a heavy command on it.
     - MEMORY USAGE key: Reports how much RAM a specific key consumes to find memory hogs.
     - TTL key: Checks how many seconds a key has left before it automatically expires.- FLUSHDB ASYNC: Clears the current database without blocking the server (unlike standard FLUSHDB).
+
+## AI Difference, between RAG and In-Memory Caching
+### RAG (Cosmos DB)
+1. RAG does not cache answers. It retrieves facts to give the LLM context to write a new answer.
+2. The Flow: The user asks a question -> You search Cosmos DB for relevant paragraphs from your PDF -> You send the user's question PLUS the PDF paragraphs to Azure OpenAI -> OpenAI generates a brand-new answer.
+3. The Cost: You pay Azure OpenAI for the massive prompt (which includes your PDF text) and the generated response every single time a user asks a question.
+
+### Semantic Caching (Redis)
+1. Semantic Caching skips the LLM entirely if the question has been asked recently.
+2. The Flow: User A asks "How do I setup Cosmos DB?" -> It goes through the RAG flow above, and you save the LLM's final answer in Redis.
+3. The Magic: Ten minutes later, User B asks, "What are the steps to configure Cosmos DB?". Redis recognizes the semantic meaning is identical to User A's question. Redis instantly returns the cached answer to User B.
+4. The Cost: You do not call Azure OpenAI at all. You bypass the LLM completely, saving 100% of the token costs and cutting a 2-second LLM wait time down to 10 milliseconds.
+
+### Concept
+1. user ask a question, i check in Redis if similar question exists.
+2. I store into CosmosDB using RAG architecture.
+3. I retrieve from CosmosDB and call OpenAI to get synthesized context.
+4. I store into Redis. 
+User Asks Question  │
+                     └───────────┬───────────┘
+                                 │
+                 Convert Question to Vector (Embed)
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │  Check Redis Cache Index│
+                    └────────────┬────────────┘
+                                 │
+                 Is Similarity Score > Threshold?
+                 ┌───────────────┴───────────────┐
+                 │                               │
+             [ YES ]                          [ NO ]
+            CACHE HIT                       CACHE MISS
+                 │                               │
+    Return Cached Answer Directly         1. Search Cosmos DB Knowledge Base
+    (Cost: $0 | Latency: ~5ms)           2. Send Chunks + Prompt to OpenAI
+                                         3. Get Synthesized LLM Answer
+                                         4. SAVE (Question Vector + Answer) to Redis
+                                         5. Return Synthesized Answer
