@@ -1,42 +1,61 @@
 # Azure Redis
-1. Port 10000 for TLS, 6739 for HTTP.
+1. Port 6380 for TLS (encrypted, default), 6379 for non-TLS (disabled by default in Azure).
 
-## Cache
-1. Data cache
-2. Content cache
-3. Session store
+## Cache Use Cases
+1. **Data Cache**: In-memory database query caching.
+2. **Content Cache**: Static content, user session data, and media metadata.
+3. **Session Store**: User web sessions across microservices.
+4. **Semantic Cache**: Store prompt vector embeddings and LLM answers to bypass repeat OpenAI calls.
 
-## Architecture
-1. A standard Redis Cluster horizontally partitions your data across multiple physical servers (nodes).
-2. It achieves this by dividing the database into exactly 16,384 Hash Slots.
-3. When you save a key, Redis runs a mathematical hash on the string (e.g., "user:0001:name") to determine which of those 16,384 slots it belongs to, routing it to the corresponding server.
-4. CROSSSLOT - If you execute `MGET user:1 user:2`, the mathematical hash for user:1 might assign it to Hash Slot 500 (living on Server A), while user:2 hashes to Slot 14,000 (living on Server B). Redis strictly requires all keys in a single command to reside on the same server to guarantee atomicity. Encountering a CROSSSLOT error means your keys are scattered across the cluster, forcing the client to either re-route commands or use pipeline/batch commands to ensure atomicity.
-    - *Enterprise clustering* - allows these commands across slots: DEL, MSET, MGET, EXISTS, UNLINK, and TOUCH. 
-    - *Active-Active* databases, only MGET, EXISTS, and TOUCH work across slots. For more information, see Database clustering.
+## Architecture & Sharding (CROSSSLOT)
+1. **Hash Slots**: Redis Clusters horizontally partition data across 16,384 Hash Slots (`0` to `16383`).
+2. **Slot Routing**: Key strings are hashed (`CRC16(key) % 16384`) to determine which node/shard stores the key.
+3. **CROSSSLOT Error**:
+   - Happens when a single command operates on multiple keys (e.g., `MGET key1 key2`, `MSET`, transactions) that live on **different** hash slots across shards.
+   - **Does it happen in Azure Cache for Redis?**
+     - **Basic / Standard Tiers (Single Shard)**: NO `CROSSSLOT` error because all keys reside on a single primary node.
+     - **Premium Tier (OSS Cluster Mode Enabled)**: YES, `CROSSSLOT` errors can happen if keys belong to different slots across shards.
+     - **Enterprise Tier (Enterprise Clustering)**: NO for supported multi-key commands (`MGET`, `MSET`, `DEL`, `EXISTS`, `UNLINK`, `TOUCH`) because Azure's Enterprise proxy automatically routes and handles multi-slot queries transparently.
+4. **Solution to CROSSSLOT (Hash Tags `{...}`)**:
+   - Enclose the shared entity ID in curly braces `{}` within the key name: `{user:1001}:name` and `{user:1001}:orders`.
+   - Redis hashes ONLY the content inside `{}` (`user:1001`), guaranteeing both keys land on the exact same hash slot!
 
-## Authentication
-1. Similar to Postgres.
-2. Username: You pass the exact Object ID (Principal ID) of your Managed Identity.
-3. Password: You use DefaultAzureCredential to fetch a raw Entra ID token string and pass it as the password.
-4. Azure intercepts this login, verifies the token with Entra ID, and grants access.
-5. Control access
-    - Data Owner: Full administrative access to all keys and commands.
-    - Data Contributor: Can read, write, and delete keys, but cannot modify administrative settings.
-    - Data Reader: Strictly read-only access (perfect for a frontend container just querying a cached LLM response).
+## Authentication & Security
+1. **Microsoft Entra ID (Managed Identity)**: Passwordless authentication.
+2. **Username**: Set to the Principal ID / Object ID of the Managed Identity.
+3. **Password**: Access token fetched via `DefaultAzureCredential`.
+4. **Built-in Azure RBAC Data Roles**:
+    - **Redis Data Owner**: Full administrative & data access.
+    - **Redis Data Contributor**: Read, write, and delete keys (no admin config changes).
+    - **Redis Data Reader**: Read-only access (ideal for caching read-only LLM results).
 
-## High Availability
-1. Active-Passive: Azure Redis Cache uses active-passive clustering. In this model, one node acts as the active node, handling all read and write operations, while the other node remains idle as a passive replica. If the active node fails, the passive node automatically takes over as the new active node.
-2. Geo-replication: Geo-replication allows you to replicate your Redis cache to a different Azure region, providing disaster recovery capabilities. It uses an active-secondary replication model, where the primary cache is the active node and the secondary cache is the passive node. Data is asynchronously replicated from the primary to the secondary cache.
-3. Zone Redundancy: Zone-redundant caches distribute data across multiple Availability Zones within the same region, ensuring high availability even if one zone experiences an outage.
+## High Availability & Disaster Recovery
+1. **Active-Passive (Primary/Replica)**: Standard in **Standard & Premium** tiers. 1 primary handles reads/writes, 1 passive replica syncs asynchronously for automatic failover.
+2. **Zone Redundancy**: Available in **Premium & Enterprise** tiers. Distributes nodes across multiple Availability Zones in the same region.
+3. **Geo-Replication**:
+    - **Passive Geo-Replication (Premium Tier)**: Asynchronously links two caches (Primary in Region A, Secondary in Region B) for read-only disaster recovery.
+    - **Active-Active Geo-Replication (Enterprise Tier)**: Multi-region active-active writes powered by CRDTs (Conflict-free Replicated Data Types).
+4. **SLA & Geo-Replication Summary**:
+    - **Basic**: 0% SLA (Single node, no HA, no geo-replication).
+    - **Standard**: 99.9% SLA (Primary/Replica, automatic failover).
+    - **Premium**: 99.95% SLA (Adds Clustering, Zone Redundancy, Passive Geo-Replication, Persistence).
+    - **Enterprise**: Up to 99.99% SLA (Adds Active-Active Geo-Replication, RediSearch, RedisJSON, RedisBloom).
 
-## Tier
-1. Three tiers store **in-memory** data:
-    - Memory Optimized Ideal for memory-intensive use cases that require a high memory-to-vCPU ratio (8:1) but don't need the highest throughput performance. It provides a lower price point for scenarios where less processing power or throughput is necessary, making it an excellent choice for development and testing environments.
-    - Balanced (Memory + Compute) Offers a balanced memory-to-vCPU (4:1) ratio, making it ideal for standard workloads. This tier provides a healthy balance of memory and compute resources.
-    - Compute Optimized Designed for performance-intensive workloads requiring maximum throughput, with a low memory-to-vCPU (2:1) ratio. It's ideal for applications that demand the highest performance.
-2. One tier stores data both in-memory and **on-disk**:
-    - Flash Optimized (preview) Enables Redis clusters to automatically move less frequently accessed data from memory (RAM) to NVMe storage. This reduces performance, but allows for cost-effective scaling of caches with large datasets.
-    - Has no *Active-Active* support
+## Azure Redis Tiers Explained
+Azure offers two main families of Redis offerings:
+
+### 1. Classic Tiers (Traditional Azure Cache for Redis)
+* **Basic**: Single node, no SLA, no persistence, dev/test only.
+* **Standard**: 2-node Primary/Replica with failover SLA.
+* **Premium**: Enterprise features (Clustering up to 10 shards, Zone Redundancy, Passive Geo-replication, RDB/AOF Persistence, VNet isolation).
+
+### 2. Azure Managed Redis / Enterprise Tiers (Next-Gen Architecture)
+Categorized by Hardware & Resource Allocation (Memory vs CPU ratio)
+* Everything is under Enterprise Tier. OSS Cluster Mode is toggled on, CROSSSLOT rules is applied.
+* **Memory Optimized (M-Series)**: High memory-to-vCPU ratio (8:1). Best for large memory caches with lower throughput needs.
+* **Balanced (B-Series)**: Balanced memory-to-vCPU ratio (4:1). Best for standard production workloads.
+* **Compute Optimized (C-Series)**: Low memory-to-vCPU ratio (2:1). High throughput & low latency for heavy computation/search workloads.
+* **Flash Optimized (E-Series)**: Extends RAM memory into NVMe SSD storage. Cost-effective for massive datasets (RAM + NVMe). *Does not support Active-Active Geo-replication.*
 
 ## Commands
 1. [Commands](https://learn.microsoft.com/en-us/training/modules/implement-data-operations-azure-managed-redis/4-implement-data-operations?pivots=text)
@@ -74,6 +93,8 @@
     - Set `maxmemory-policy` to either
         - allkeys-lfu: Evicts the least recently used keys out of all keys when memory is full. Best for pure cache instances.
         - volatile-lfu: Evict LFU keys with TTL set.
+6. All LFU, LFM and LFU needs to be resetted with new expiry if doesn't want to be evicted. All these policy are based on memory.
+7. If there are plans that you want to cache Big memory data, and some are small. Then a new cluster to control both(one for big memory cache, one for smaller) are better approach, as all these LFU, LFM starts to evict small memory keys frequently.
     
 Start
   |
@@ -343,7 +364,7 @@ Dialect 4 | RediSearch 2.8+ (Fuzzy search and more)
 
 
 
-## Notes
+## Features
 1. Use SCAN, Not KEYS (see demonstration).
 2. Specialized Scan Commands
     - HSCAN: Iterates through fields and values inside a specific Hash.SSCAN: Iterates through elements inside a specific Set.
@@ -352,6 +373,31 @@ Dialect 4 | RediSearch 2.8+ (Fuzzy search and more)
     - TYPE key: Checks a key's data type before you accidentally run a heavy command on it.
     - MEMORY USAGE key: Reports how much RAM a specific key consumes to find memory hogs.
     - TTL key: Checks how many seconds a key has left before it automatically expires.- FLUSHDB ASYNC: Clears the current database without blocking the server (unlike standard FLUSHDB).
+4. Rate limiting, Redis comes with rate-limiting using INCR.
+    - Required to increase the key with `client.incr("KEY")`
+    - Get the count with `const current = await redisClient.get(key)`
+    - to decrease just use a expiry.
+    ```javascript
+        const redisClient = createClient({
+            url: "redis://localhost:6379",
+        });
+
+        redisClient.on("error", (err) => console.log("Redis Client Error", err));
+
+        await redisClient.connect();
+
+        // Rate limit: 5 requests per second per IP
+        async function rateLimit(ip) {
+            const key = `ratelimit:${ip}`;
+            const current = await redisClient.get(key);
+            if (current && parseInt(current) >= 5) {
+                return false; // Block request
+            }
+            await redisClient.incr(key);
+            await redisClient.expire(key, 1); // Reset after 1 second
+            return true; // Allow request
+        }
+    ```
 
 ## AI Difference, between RAG and In-Memory Caching
 ### RAG (Cosmos DB)
