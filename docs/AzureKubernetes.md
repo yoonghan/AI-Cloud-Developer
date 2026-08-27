@@ -2,6 +2,86 @@
 
 1. Use AKS for Kubernetes. 
 
+## Authentication to talk with other resources.
+1. Need to use UAMI (User Access Management Identity) for authentication with Azure resources. In this case you need to:
+  - Create a UAMI in Azure Portal. Note its Client ID and Resource ID.
+  - Example UAMI command:
+  ```
+  az identity create --name my-uami --resource-group my-resource-group --location my-location
+  UAMI_CLIENT_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'clientId' -o tsv)
+  UAMI_PRINCIPAL_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'principalId' -o tsv)
+
+  ```
+  - Not required to assign role to UAMI.
+  - Then create a Service Account in the AKS cluster, using the UAMI's Client ID and Resource ID.
+  - Example of Service Account:
+  ```
+  apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    azure.workload.identity/client-id: <UAMI_CLIENT_ID>
+  name: azure-workload-identity
+  namespace: default
+```
+  - Enable workload identity in AKS:
+  ```
+  az aks update \
+  --resource-group myResourceGroup \
+  --name myAKSCluster \
+  --enable-workload-identity \
+  --attach-acr <acr-name>
+
+  - Link the UAMI to the Service Account in AKS:
+  ```
+  AKS_OIDC_ISSUER=$(az aks show --resource-group <resource-group> --name <cluster-name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
+
+az identity federated-credential create \
+  --name <federated-identity-name> \
+  --identity-name <workload-identity-name> \
+  --resource-group <resource-group> \
+  --issuer "$AKS_OIDC_ISSUER" \
+  --subject "system:serviceaccount:<namespace>:<service-account-name>" \
+  --audiences "api://AzureADTokenExchange"
+  ```
+  - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
+  - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
+  - Bind pod with the service-account
+  ```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: study-buddy-api
+  namespace: ai-workloads
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: study-buddy
+        # 1. REQUIRED: Triggers the AKS webhook to inject the tokens
+        azure.workload.identity/use: "true" 
+    spec:
+      # 2. REQUIRED: Run as the ServiceAccount we annotated in Step 1
+      serviceAccountName: study-buddy-sa
+  ```
+2. System-assigned managed identity does not work as it does not have Client ID.
+3. Need to use workload identity for authentication with Azure resources.
+4. Service Principal (Client ID + Client Secret) do work, but is not recommended, it can be exposed.
+5. For repository, it needs to be specified in Kubernetes.
+```
+kubectl create secret docker-registry ghcr-secret \
+  --namespace $NAMESPACE \
+  --docker-server=ghcr.io \
+  --docker-username=$GHCR_USERNAME \
+  --docker-password=$GHCR_PASSWORD \
+  --docker-email="noreply@example.com" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+#or 
+az aks update --resource-group rg --name myAKS --attach-acr myacr
+```
+
 ## Service / Virtual Service
 1. To expose, use either Service or Virtual Service. Virtual Service allows you to define traffic management rules, such as routing, load balancing, and circuit breaking. Service is a simpler way to expose a service. Virtual Service is built on top of Service and uses Istio under the hood.
 2. To map service to pod, use labels.
@@ -92,12 +172,80 @@ containers:
     readOnly: true
 ```
 
+## Connecting to ACR
+1. Requires ACR to be attached to the AKS cluster using `az aks update --resource-group rg --name myAKS --attach-acr myacr` or use the Azure Container Registry task to build the image and push it to ACR. In the Exam, you will not be able to connect to ACR, so you need to use Azure Container Registry task to build the image and push it to ACR.
+2. Kubernetes needs to be allowed to pull image from ACR. Use `az aks update --name <aks-name> --resource-group <resource-group> --attach-acr <acr-name>`. Behind the hood with '--attach-acr' it does:
+    - It looks up the Kubelet Managed Identity (or Service Principal) that is attached to your AKS agent nodes.
+    - It goes to your Azure Container Registry.
+    - It creates an Azure RBAC role assignment, granting the "AcrPull" role to the AKS Kubelet identity, scoped to that specific registry.
+
 ## Storage
 1. Link [here](https://learn.microsoft.com/en-us/training/modules/store-data-azure-kubernetes-service/2-define-storage?pivots=text)
 2. Volume to choose:
     - CSI
     - Azure Container Storage - Requires to be enabled `az aks update -n myAKSCluster -g myResourceGroup --enable-azure-container-storage ephemeralDisk`, then in YAML specify `storagePools` in `storageClass`.
 3. Choose Azure Container Storage for data-heavy AI workloads (like vector databases) because it pools underlying hardware—like lightning-fast local NVMe drives—into a unified, software-defined layer. It also bypasses standard Azure Disk attach/detach bottlenecks, enabling much faster pod failovers and volume scaling across your cluster.
+
+## Advantage over ACA
+1. Complete control over the environment.
+2. Can use any container image.
+3. Can choose VM. AKS allows you to pick the exact Azure VM SKU (e.g., you specifically want Nvidia A100s, V100s, or T4s). ACA gives you "T-shirt sizes" for GPU profiles, which limits your hardware tuning capabilities.
+4. Support different node pools. 
+5. Support CSI storage.
+6. Support dapr.
+
+## Disadvantage compared to ACA
+1. More complicated setup and management.
+
+## Scaling
+1. Horizontal pod autoscaling. Not great it only checks on health and CPU/Memory usage and not based on external events.
+```bash
+kubectl apply -f hpa-scale-up.yaml
+```
+2. KEDA scaler (this does not include authentication, to allow authentication you need TriggerAuthentication/Subscription)
+```bash
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: queue-scaler
+  namespace: ai-workloads
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-api
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: azure-queue
+    metadata:
+      queueName: ai-tasks
+      queueLength: "10"
+      connectionStringFromEnv: QUEUE_CONNECTION_STRING
+```
+3. This is a trigger authentication, the namespace must be the same as ScaledObject.
+```bash
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: azure-queue-auth
+  namespace: ai-workloads       # Must be in the same namespace as the ScaledObject
+spec:
+  podIdentity:
+    provider: azure-workload
+    identityId: "11111111-2222-3333-4444-555555555555" # The Client ID of your UAMI
+```
+4. But this is only a part, you also need to add authentication to KEDA in the federated credentials.
+```bash
+az identity federated-credential create \
+  --name "keda-queue-scaler-auth" \
+  --identity-name "my-uami-name" \
+  --resource-group "my-rg" \
+  --issuer "<AKS-OIDC-ISSUER-URL>" \
+  --subject "system:serviceaccount:keda:keda-operator" \
+  --audience "api://AzureADTokenExchange"
+```
+
 
 ## Troubleshooting
 1. Inspect Services using kubectl
@@ -113,3 +261,63 @@ Selector labels that should match pod labels
 Ports and targetPorts that should align with container ports
 EndpointSlices that list the actual pod IPs that receive traffic
 If a Service has no EndpointSlices, your AI API can't receive traffic even if pods are healthy. Resolving label mismatches or port configuration restores connectivity.
+
+## Need to read
+1) AKS security & best practices (Microsoft)
+  - https://learn.microsoft.com/azure/aks/security-best-practices
+  - https://learn.microsoft.com/azure/aks/use-azure-policy
+2) AKS and Azure networking
+  - Azure CNI & networking for AKS: https://learn.microsoft.com/azure/aks/configure-azure-cni
+  - Azure Firewall overview: https://learn.microsoft.com/azure/firewall/overview
+  - Azure NAT Gateway: https://learn.microsoft.com/azure/virtual-network/nat-gateway/nat-overview
+3) Core Kubernetes primitives (official k8s docs)
+  - Namespaces: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+  - RBAC: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+  - ResourceQuota: https://kubernetes.io/docs/concepts/policy/resource-quotas/
+  - LimitRange: https://kubernetes.io/docs/concepts/policy/limit-range/
+  - NetworkPolicy: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+  - Taints & Tolerations: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  - Pod Security Admission & Pod Security Standards: https://kubernetes.io/docs/concepts/security/pod-security-admission/ and https://kubernetes.io/docs/concepts/security/pod-security-standards/
+4) Network plugin / egress controls
+  - Project Calico (network policies & egress support): https://docs.projectcalico.org/
+5) Admission/Policy engines (enforcement)
+  - Azure Policy + Gatekeeper for AKS: https://learn.microsoft.com/azure/aks/gatekeeper-overview and https://learn.microsoft.com/azure/aks/use-azure-policy
+  - Open Policy Agent Gatekeeper: https://open-policy-agent.github.io/gatekeeper/ (policy examples)
+  - Kyverno (policy engine that many teams prefer for Kubernetes-native policies): https://kyverno.io/
+6) Image registry / ACR guidance
+  - Azure Container Registry docs: https://learn.microsoft.com/azure/container-registry/
+  - Enforce allowed registries via admission controllers (Gatekeeper/Kyverno policy examples) — see Kyverno/Gatekeeper examples pages.
+7) Security Policy
+  - https://learn.microsoft.com/en-us/azure/aks/network-policy-best-practices
+
+## Thoughts
+Sure! The way Kubernetes handles network traffic can be a bit confusing at first because it uses a layered approach.
+
+Here is the breakdown of Service vs Ingress vs VirtualService, and why the plan uses an Ingress.
+
+1. Kubernetes Service (Layer 4)
+A Service is a core Kubernetes concept used to group your pods together under a single IP address.
+
+ClusterIP (Internal): By default, a Service is internal. It allows App A to talk to App B inside the cluster. (This is what is defined in the service-ingress.yaml artifact).
+LoadBalancer (External): You can expose your app directly to the internet by changing the Service type to LoadBalancer. When you do this, AKS talks to Azure to automatically provision a public Azure Standard Load Balancer.
+The Catch: A Load Balancer operates at Layer 4 (TCP/UDP). It does not understand HTTP. It cannot do URL-based routing (e.g., send /api to one pod and /web to another), it cannot easily handle CORS, and it cannot terminate SSL/HTTPS certificates effectively. Also, if you have 10 apps, you will pay for 10 Public IP addresses.
+2. Kubernetes Ingress (Layer 7) - The Recommended Approach
+An Ingress solves the limitations of the LoadBalancer. It is a "smart router" for HTTP/HTTPS traffic.
+
+In the script, we installed the NGINX Ingress Controller. This controller creates one Azure Load Balancer with one Public IP.
+The Ingress YAML you deploy acts as the configuration rulebook for NGINX.
+Why we use it: It operates at Layer 7. It understands hostnames (www.walcron.com), URL paths, and can terminate SSL certificates. Most importantly for your app, we can use Ingress annotations (like nginx.ingress.kubernetes.io/enable-cors: "true") to perfectly replicate the CORS rules you had set up in your Azure Container App environment!
+3. VirtualService (Istio / Service Mesh)
+I saw your note in AzureKubernetes.md about VirtualService. It is important to clarify: A VirtualService is not a native Kubernetes object.
+
+It is a custom resource that only exists if you install a Service Mesh called Istio into your cluster.
+If you use Istio, you replace the NGINX Ingress Controller with an Istio Gateway, and you replace the Ingress YAML with a VirtualService YAML.
+Why use VirtualService? It is incredibly powerful. It allows for advanced traffic management like sending 90% of traffic to v1 of your app and 10% to v2 (Canary deployments), automatic retries, and circuit breakers.
+Should you use it? Since you are already using Dapr, I recommend against using Istio right now. Dapr and Istio overlap significantly. Dapr already handles service-to-service mTLS encryption, observability, and retries. Running both Dapr and a Service Mesh like Istio at the same time is extremely complex and usually overkill unless you have a massive enterprise microservice architecture.
+Summary
+To directly answer your question:
+
+Can you use a Service to expose it? Yes (using type: LoadBalancer), but you lose CORS, SSL termination, and path-based routing. It's too basic for web apps.
+Can you use a VirtualService? Yes, but it requires installing Istio, which is very complex and overlaps with your existing Dapr setup.
+Why Ingress? It is the sweet spot. It provides the exact Layer 7 HTTP routing, CORS support, and SSL capabilities that your Azure Container App was giving you out of the box, without the overhead of a full Service Mesh.
+

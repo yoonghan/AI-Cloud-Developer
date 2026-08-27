@@ -35,6 +35,11 @@ az containerapp update \
 ```
 2. You can deactivate a revision `az containerapp revision deactivate`. This option is useful when you want to rollback to the previous version.
 3. Feature of auto pull from registry `--enable-cd true`. Take note using `latest` image tag does not pull latest and requires restart.
+4. Check revisions `az containerapp revision list`
+5. Delete revision `az containerapp revision delete --name <app-name> --resource-group <resource-group> --revision <revision-name>`
+6. Update default replica `az containerapp update --name <app-name> --resource-group <resource-group> --revision <revision-name>`
+7. **Secret** change does not bump revision. You need to update the image to bump revision and also issue `az containerapp revision restart --name <app-name> --resource-group <resource-group>`. However, you can use `az containerapp update --name <app-name> --resource-group <resource-group> --set template.containers[0].env[0].secretRef=<new-secret-ref>` to update the secret reference, and it will bump the revision.
+8. **Keyvault Secret** also does not bump revision, but there is a caveat that there is _cache_ and might not be updated. The best force is to update revision!
 
 ## Image pull behavior
 1. Understanding when App Service pulls images helps you plan for deployment scenarios and troubleshoot issues.
@@ -47,19 +52,22 @@ az containerapp update \
 ## Ingress
 1. external - internet/outbound traffic enabled.
 2. internal - no out bound traffic to external.
-3. Code
+3. Deploy both containers to the same ACA Environment if there is a frontend and backend; with frontend communicating with backend without using internet, i.e. it is faster and more secure. Enable External Ingress on the Frontend app, and enable Internal Ingress on the Backend app.
+4. Code:
 
 ```bash
 az containerapp update \
     --name myapp \
     --resource-group myresourcegroup \
     --ingress external \
+    #--ingress internal \ then use properties.configuration.ingress.fqdn in frontend config to connect to backend.
     --target-port 8080 \
     --registry-server myregistry.azurecr.io
 ```
 
 ## Registry authentication
 1. Similar to Azure App Service, ACA uses managed identity or service principal for registry authentication.
+2. Note any application that uses UAMI (not system managed identity), a CLIENT_ID needs to be provided via environment variable. You MUST set the AZURE_CLIENT_ID environment variable in your Container App. Why? Because a single Container App can have multiple User-Assigned Identities attached to it. When your code calls new DefaultAzureCredential(), it uses that variable to know which specific identity it should request an Entra ID token for.
 
 ## Revisions
 1. Change in condition of:
@@ -148,7 +156,7 @@ az containerapp create \
 ### Scaling Rules 
 1. Works via KEDA - Kubernetes Event-driven Autoscaling.
 2. Rules:
-  - HTTP Scaling - concurrent requests per container
+  - HTTP Scaling - concurrent requests per container. [IMPORTANT] Jobs cannot be triggered via HTTP, use cron or events.
   - CPU/Memory Scaling - based on cpu/memory utilization percentage
   - KEDA Scaling - External Scaling
   - Azure Service Bus Scaling - topic name + queue name + queue length
@@ -160,7 +168,24 @@ az containerapp create \
   - Redis Stream Scaling - Redis length
 2. Can use Managed identity.
 3. Properties to be aware of:
-  - --scale-rule-auth  = authorization
+  - --scale-rule-auth "connection=my-queue-connection-string-secret" = method to use connection string to queue or event bus
+  - --scale-rule-identity = preferred way
+  ```bash
+  az containerapp job create \
+  --name "my-event-job" \
+  --resource-group "my-rg" \
+  --environment "my-environment" \
+  --image "myregistry.azurecr.io/processor:v1" \
+  --trigger-type "Event" \
+  --replica-timeout 600 \
+  --polling-interval 30 \
+  --min-executions 0 \
+  --max-executions 10 \
+  --scale-rule-name "queue-trigger" \
+  --scale-rule-type "azure-queue" \
+  --scale-rule-metadata "accountName=mystorageaccount" "queueName=tasks" "queueLength=1" \
+  --scale-rule-auth "connection=storage-connection-secret"
+  ```
   - `min-replicas` and `max-replicas` default to 1.
 4. Can use yaml.
 5. To see replicas use `az containerapp replica list -n N -g G`.
@@ -177,6 +202,19 @@ az containerapp logs show \
   --follow true
 ```
 7. [link](https://learn.microsoft.com/en-us/training/modules/scale-containers-azure-container-apps/4-keda-scalers-custom-workloads?pivots=text)
+8. You can create jobs with
+```
+az containerapp job create \
+  --name "daily-five-pm-job" \
+  --resource-group "MyResourceGroup" \
+  --environment "MyContainerAppEnv" \
+  --trigger-type "Cron" \
+  --cron-expression "0 17 * * *" \
+  --replica-timeout 1800 \
+  --replica-retry-limit 1 \
+  --image "myregistry.azurecr.io/my-task-image:latest" \
+  --cpu "0.5" --memory "1.0Gi"
+  ```
 
 ### Traffic Management
 1. To have traffic-based scaling, enable `--revision-mode multiple`. Example `--revision-weight order-api--v1=80 order-api--v2=20`.
