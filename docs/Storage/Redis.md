@@ -274,13 +274,24 @@ query = (
     .dialect(2)
 )
 
+// return top 3 results.
 hybrid_query = Query(
     "@category:{documentation}=>[KNN 3 @embedding $query_vec AS score]"
-).return_fields("title", "category", "score").sort_by("score").dialect(2)
+).return_fields("title", "category", "score").sort_by("score").dialect(2) 
 
-range_query = Query(
-    "@embedding:[VECTOR_RANGE 0.2 $query_vec]=>{$YIELD_DISTANCE_AS: score}"
-).return_fields("title", "score").sort_by("score").dialect(2)
+//Give me all products that are at least 80% similar, no matter how many matches exist."
+const searchResults = await client.ft.search(
+    "idx:products",
+    "@embedding:[VECTOR_RANGE 0.25 $query_vec]=>{$YIELD_DISTANCE_AS: score}",
+    {
+        PARAMS: {
+            query_vec: float32Buffer(vectorArray),
+        },
+        SORTBY: "score", // Optional: sort matching items by closest distance
+        DIALECT: 2,
+        RETURN: ["key", "name", "score", "category"]
+    }
+);
 ```
 2. Distance metrics
     - COSINE: Use for text embeddings (OpenAI, Cohere, Sentence Transformers)
@@ -290,6 +301,47 @@ range_query = Query(
 ```python
 query = Query("*=>[KNN 10 @embedding $query_vec EF_RUNTIME 200 AS score]")
 ```
+4. Hybrid search, just replace the *
+```javascript
+const searchResults = await client.ft.search(
+    "idx:products",
+    // Replace '*' with '(@category:{Sports})'
+    `(@category:{${categoryFilter}})=>[KNN 3 @embedding $query_vec AS score]`,
+    {
+        PARAMS: {
+            query_vec: float32Buffer(vectorArray),
+        },
+        SORTBY: "score", // Optional: sort matching items by closest distance
+        DIALECT: 2,
+        RETURN: ["key", "name", "score", "category"]
+    }
+);
+
+//More Condition
+// `(@category:{Sports} @name:Shoes)=>[KNN 3 @embedding $query_vec AS score]`
+
+// Vector add in front
+// category:{Sports} @embedding:[VECTOR_RANGE 0.25 $query_vec]=>{$YIELD_DISTANCE_AS: score}
+```
+
+
+Query Type | Redis Syntax | What it returns
+---|---|---
+Pure KNN | *=>[KNN 3 @embedding $vec AS score] | Top 3 closest items across all documents
+Hybrid KNN | (@category:{Sports})=>[KNN 3 @embedding $vec AS score] | Top 3 closest items only within Sports
+Pure Range | @embedding:[VECTOR_RANGE 0.2 $vec]=>{$YIELD_DISTANCE_AS: score} | All items within distance $\le 0.2$
+Hybrid Range | @category:{Sports} @embedding:[VECTOR_RANGE 0.2 $vec]=>{$YIELD_DISTANCE_AS: score} | All Sports items within distance $\le 0.2$
+
+6. Dialect
+
+Dialect | Introduced
+---|---
+Dialect 1 | RediSearch 1.x (Default in legacy)
+Dialect 2 | RediSearch 2.4 (Have KNN and VECTOR_RANGE)
+Dialect 3 | RediSearch 2.6 (Support TAG)
+Dialect 4 | RediSearch 2.8+ (Fuzzy search and more)
+
+
 
 ## Notes
 1. Use SCAN, Not KEYS (see demonstration).
