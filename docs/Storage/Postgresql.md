@@ -165,7 +165,7 @@ INSERT INTO documents (title, content, category, embedding)
 VALUES
     ('Document 1', 'Content...', 'legal', '[0.123, 0.33,]'::vector),
 ```
-3. Policy types:
+4. Policy types:
     - <=> = Cosine Distance (Use this for OpenAI text-embedding-3-small/large).
     - <-> = Euclidean Distance (L2) (Use this if you are doing spatial math or older models).
     - <#> = Inner Product.
@@ -175,10 +175,45 @@ FROM documents
 ORDER BY distance
 LIMIT 10;
 ```
-4. Vector types:
+5. Vector types:
     - vector = 32bit
     - halfvec = 16bit
     - sparsevec = smart, it stores only vector with non 0. * HNSW indexes on sparsevec columns support up to 1,000 non-zero elements. I
+6. Vector index have to match with data type, eg
+```sql
+    -- halfvec type, halfvec index
+    CREATE TABLE products (
+        id INT PRIMARY KEY,
+        name TEXT,
+        embedding halfvec(8)
+    );
+
+    CREATE INDEX idx_products_halfvec_hnsw ON products USING hnsw (embedding halfvec_cosine_ops);
+
+    -- Select also needs halfvec
+    SELECT * FROM products ORDER BY embedding <-> $1::halfvec LIMIT 3
+
+    -- sparsevec type, sparsevec index
+    CREATE TABLE products (
+        id INT PRIMARY KEY,
+        name TEXT,
+        embedding sparsevec(1536)
+    );
+    
+    -- IP mean inner product,cosine = cosine distance,L2 = euclidean distance
+    CREATE INDEX idx_products_sparsevec_hnsw ON products USING hnsw (embedding sparsevec_ip_ops);
+
+
+    -- vector type, vector index
+    CREATE TABLE products (
+        id INT PRIMARY KEY,
+        name TEXT,
+        embedding vector(1536)
+    );
+
+    CREATE INDEX idx_products_vector_hnsw ON products USING hnsw (embedding vector_cosine_ops);
+
+```
 
 ## Performance
 1. use executeMany for multi line execution
@@ -194,7 +229,23 @@ with cur.copy("COPY messages (conversation_id, role, content) FROM STDIN") as co
     - Use explain index `EXPLAIN ANALYZE`, to check query performance.
     - Create index with `CREATE INDEX CONCURRENTLY`
     - Read here https://learn.microsoft.com/en-us/training/modules/implement-vector-search-azure-database-postgresql/4-manage-index-lifecycle-embedding-updates?pivots=text
-4. Cleaning diskspace
+4. How explain shows. See there is "idx_products_ivfflat" is being used.
+```json
+[
+  {
+    'QUERY PLAN': 'Limit  (cost=1.00..78.46 rows=3 width=540) (actual time=0.038..0.039 rows=1 loops=1)'
+  },
+  {
+    'QUERY PLAN': '  ->  Index Scan using idx_products_ivfflat on products  (cost=1.00..259.20 rows=10 width=540) (actual time=0.037..0.038 rows=1 loops=1)'
+  },
+  {
+    'QUERY PLAN': "        Order By: (embedding <#> '[0.099975586,0.19995117,0.15002441,0.7998047,0.30004883,0.60009766,0.39990234,0.5]'::halfvec)"
+  },
+  { 'QUERY PLAN': 'Planning Time: 0.017 ms' },
+  { 'QUERY PLAN': 'Execution Time: 0.046 ms' }
+]
+```
+5. Cleaning diskspace
 ```sql
 -- Standard vacuum (runs concurrently)
 VACUUM documents;
@@ -202,6 +253,11 @@ VACUUM documents;
 -- Full vacuum (reclaims more space but locks the table)
 VACUUM FULL documents;
 ```
+6. What Happens if you create 2 indexes, IVFFlat and HNSW in same table?
+    - If you seeded this table with 100,000 vectors and ran a similarity search, PostgreSQL still would not crash. Instead, the Query Planner takes over.
+    - Before executing your query, PostgreSQL evaluates the mathematical "cost" of using the HNSW index versus the IVFFlat index.
+    - It picks the winner (usually HNSW for pure speed) and completely ignores the loser for that specific query.
+    - The Penalty: You still pay the heavy RAM and storage costs to keep both indexes updated every time you insert a new row, even if only one is being used.
 
 ### Indexing Vector
 1. In vector

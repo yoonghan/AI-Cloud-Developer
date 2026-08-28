@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import sampleData from "./sample_data.json";
+import sampleData from "./sample_data.json" with { type: "json" };
 
 function float32Buffer(arr: number[]): Buffer {
     return Buffer.from(new Float32Array(arr).buffer);

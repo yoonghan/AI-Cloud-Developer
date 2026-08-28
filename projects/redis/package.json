@@ -2,8 +2,7 @@
   "name": "learn-redis",
   "version": "1.0.0",
   "description": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "demo": "tsx watch src/demonstration.ts",
