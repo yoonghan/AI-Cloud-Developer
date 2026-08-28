@@ -21,14 +21,28 @@
    - Redis hashes ONLY the content inside `{}` (`user:1001`), guaranteeing both keys land on the exact same hash slot!
 
 ## Authentication & Security
-1. **Microsoft Entra ID (Managed Identity)**: Passwordless authentication.
+1. **Microsoft Entra ID (Managed Identity)**: Passwordless authentication. Obtaind via DefaultAzureCredential to https://redis.azure.com/.default.
+
+```powershell
+# Get Access Token for DefaultAzureCredential
+$tenantId = "<your-tenant-id>"
+$resource = "https://redis.azure.com/.default"
+$token = (az account get-access-token --tenant $tenantId --resource $resource).accessToken
+
+# Get Managed Identity Principal ID (for username)
+$identity = az identity show --name "<your-managed-identity-name>" --resource-group "<your-resource-group>" --query "principalId" -o tsv
+
+# Redis Connection String Format
+# "<redis-host>:6379,password=<access-token>,ssl=True,identity=<principal-id>"
+$redisConnectionString = "<redis-hostname>.redis.cache.windows.net:6379,password=$token,ssl=True,identity=$identity"
+```
+
 2. **Username**: Set to the Principal ID / Object ID of the Managed Identity.
 3. **Password**: Access token fetched via `DefaultAzureCredential`.
 4. **Built-in Azure RBAC Data Roles**:
     - **Redis Data Owner**: Full administrative & data access.
     - **Redis Data Contributor**: Read, write, and delete keys (no admin config changes).
-    - **Redis Data Reader**: Read-only access (ideal for caching read-only LLM results).
-
+    - **Redis Data Reader**: Read-only access (ideal for caching read-only LLM results). Read-only commands (GET, MGET, HGET, etc.).
 ## High Availability & Disaster Recovery
 1. **Active-Passive (Primary/Replica)**: Standard in **Standard & Premium** tiers. 1 primary handles reads/writes, 1 passive replica syncs asynchronously for automatic failover.
 2. **Zone Redundancy**: Available in **Premium & Enterprise** tiers. Distributes nodes across multiple Availability Zones in the same region.
