@@ -83,6 +83,8 @@ async function seedLarge() {
                 INSERT INTO products (id, name, category, metadata, embedding)
                 VALUES ${valueTuples.join(', ')}
             `;
+
+            // Batching is done just by passing array!!!
             await client.query(queryText, values);
             console.log(`   -> Inserted ${batchStart + BATCH_SIZE} / ${TOTAL_RECORDS} rows...`);
         }

@@ -365,4 +365,63 @@ const insertQuery = `
     - If you have users in Europe, but your database is in the US, you can spin up a Read Replica in Europe. Azure uses native PostgreSQL Asynchronous Replication to stream data changes to Europe.
     - The Catch: The Europe server is Read-Only. All inserts/updates must still travel across the ocean to the primary US server. If the US goes down, you can manually "Promote" the European Read Replica to become the new primary writable database.
 
+## Partitioning
+
+### IVFFlat: lists (Cluster Partitioning)
+IVFFlat (Inverted File Flat) divides vector space into $K$ cluster regions (Voronoi cells) using k-means clustering.
+
+       IVFFlat Index (lists = 4)
+┌────────────┬────────────┐
+│ Cluster 1  │ Cluster 2  │
+│  •  •  x   │   x  •     │
+├────────────┼────────────┤
+│ Cluster 3  │ Cluster 4  │
+│   •  x     │   •  •  x  │
+└────────────┴────────────┘
+ (x = cluster centroid, • = vectors)
+- lists (Build-time parameter): Specifies the total number of cluster buckets created when the index is built.
+- For 100,000 records, lists = 100 means PostgreSQL clusters the data into 100 distinct buckets (~1,000 vectors per bucket).
+- Recommended Formula for lists:
+  - Tables up to 1 million rows: lists = rows / 1000 (e.g., 100,000 rows → lists = 100)
+  - Tables over 1 million rows: lists = sqrt(rows) (e.g., 1,000,000 rows → lists = 1000)
+- Query-Time Companion: ivfflat.probes
+    - lists controls how many buckets are created.
+    - At query time, ivfflat.probes (default = 1) controls how many of those buckets PostgreSQL searches inside.
+    - Increasing SET ivfflat.probes = 10; searches more buckets, increasing recall (accuracy) at the cost of slight search latency.
+
+### HNSW: m and ef_construction (Graph Construction)
+HNSW (Hierarchical Navigable Small World) builds a multi-layered graph where top layers act as "highway express tracks" for fast long-range hops, and bottom layers contain fine-grained local links.
+
+Layer 2 (Highway)    [Node A] ---------------------------> [Node Z]
+                        │                                     │
+Layer 1 (Local)      [Node A] ------> [Node F] ------------> [Node Z]
+                        │                │                    │
+Layer 0 (Base Data)  [Node A] -> [B] -> [F] -> [G] -> [K] -> [Node Z]
+
+- m (Max Connections Per Node)
+  - What it means: The maximum number of outgoing bi-directional links (edges) connected to each node in the graph layers.
+  - Default: m = 16.
+  - Impact:
+    - Higher m (e.g., 32 or 64): Stronger graph connectivity, higher search recall/accuracy for complex high-dimensional vectors, but uses more RAM and takes longer to build/update.
+    - Lower m (e.g., 8 or 16): Smaller index size on disk/RAM, faster inserts/updates.
+- ef_construction (Search Depth During Index Building)
+  - What it means: The size of the dynamic candidate list evaluated when inserting a new vector into the graph during index creation.
+  - Default: ef_construction = 64.
+  - Impact:
+    - Higher ef_construction (e.g., 128 or 256): Produces a higher quality graph topology with optimal connections, leading to higher search accuracy at query time, but index creation time increases.
+    - Lower ef_construction (e.g., 32): Faster index creation, but graph quality and query recall may be lower.
+- Query-Time Companion: hnsw.ef_search
+    - ef_construction controls graph quality during index creation.
+    - At query time, hnsw.ef_search (default = 40) controls how many candidate nodes are evaluated during a vector search. You can tune this dynamically per session (SET hnsw.ef_search = 100;).
+
+### Quick Comparison Summary
+
+| Parameter | Index Type | When it is used | What it controls | Standard / Rule of Thumb |
+|---|---|---|---|---|
+| lists | IVFFlat | Index Creation | Number of cluster buckets created | rows / 1000 (up to 1M rows) |
+| ivfflat.probes | IVFFlat | Query Execution | Number of buckets searched per query | 1 default (increase for higher recall) |
+| m | HNSW | Index Creation | Max graph connections per node | 16 (8–64 depending on accuracy/RAM) |
+| ef_construction | HNSW | Index Creation | Search depth used during graph building | 64 (128–256 for higher graph quality) |
+    hnsw.ef_search	HNSW	Query Execution	Dynamic candidate pool during search
+
     
