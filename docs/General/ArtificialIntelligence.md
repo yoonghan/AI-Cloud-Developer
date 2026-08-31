@@ -59,3 +59,6 @@ When metrics fall below target, systematically experiment with parameters that a
     - Index parameters: Higher ef_search (HNSW) or probes (IVFFlat) improves recall by searching more candidates, at the cost of query latency. Start with default parameters and increase only if recall is insufficient.
 
 Distance thresholds: Tighter thresholds improve precision by excluding marginal matches. Looser thresholds improve recall by including more candidates. Use your evaluation dataset to find the threshold that balances both metrics for your use case.
+
+## Model Context Protocol (MCP)
+1. An open standard that defines how AI agents and language models discover and invoke external tools. 

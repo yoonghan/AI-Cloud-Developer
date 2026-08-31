@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    }
+  },
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[4.*, 5.0.0)",
+  },
+  "extensions": {
+      "mcpToolTrigger": {
+        "serverName": "document-tools",
+        "serverVersion": "1.0.0",
+        "serverInstructions": "Tools for document processing and classification"
+    }
+  }
+}
