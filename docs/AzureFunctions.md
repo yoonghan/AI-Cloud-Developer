@@ -14,7 +14,7 @@
 | function_app.py | Main script where Azure Functions and triggers are defined using decorators. | X | ✅ |
 | host.json | Global configuration for all functions in the app. | X | ✅ |
 | requirements.txt | Python dependencies installed during publish when using remote build. | X | ❌ |
-| local.settings.json | Local-only app settings and secrets (never published). Get via os.environ["AI_SERVICE_ENDPOINT"] | YES. Do not commit | ❌ |
+| local.settings.json | Local-only app settings and secrets (never published). Get via os.environ["AI_SERVICE_ENDPOINT"]. Also to set `useDevelopmentStorage=true` | YES. Do not commit | ❌ |
 | .funcignore | Specifies files and folders to exclude from deployment (for example, .venv/, tests/, local.settings.json). | X, but not for Azure | ❌ (recommended) |
 | .venv/ | Local virtual environment for Python (excluded from deployment). | Optinal | ❌ |
 | .vscode/ | Editor config for Visual Studio Code. Not required for deployment. | Optional | ❌ |
@@ -27,7 +27,7 @@
 
 ### Azurite
 1. The Azure Functions runtime requires a storage account connection (configured through the AzureWebJobsStorage setting) .
-2. Use Azurite emulator for local.
+2. Use Azurite emulator for `local.settings.json`
 ```json
 {
     "IsEncrypted": false,
