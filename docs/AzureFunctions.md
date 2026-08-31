@@ -38,6 +38,7 @@
 }
 ```
 3. When you deploy a function app to Azure, the platform creates or requires a linked storage account automatically. The `UseDevelopmentStorage=true` setting applies only to local development and has no effect in the cloud.
+4. Run with `docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/azure-storage/azurite`
 
 ### Limit
 1. 230 seconds (2 minute). So create a service bus.
@@ -52,8 +53,14 @@
 5. How to enable it locally? It mentions local.settings.json, but how?
 
 ## Identity
-1. Azure function requires AzureStorage.
-2. You can replace the traditional `AzureWebJobsStorage` connection string with identity-based settings by configuring the storage account name and assigning the appropriate roles: `AzureWebJobsStorage__accountName = mystorageaccount`.
+1. Azure function requires AzureStorage. For
+    - **Code Storage**: In serverless plans like Flex Consumption, your actual deployment packages (your Node.js or C# code) are saved in Azure Blob Storage. When the function wakes up, it pulls the code from here.  
+    - **State and Coordination**: If your function scales out to 10 instances, the runtime uses Storage Blob leases to ensure that singleton processes—like a Timer Trigger—only fire exactly once, rather than 10 times.
+    - **Internal Queuing**: The runtime relies heavily on hidden Azure Storage Queues to manage execution retries, coordinate scale-out behaviors, and handle the state machine for Durable Functions.
+    - **Logging**: It serves as a temporary buffer for execution logs before they are ingested by Application Insights.
+2. Two ways:
+    -  `AzureWebJobsStorage`(Legacy): connection string with identity-based settings, includes accesskey. Still required if cross Tenant. Sample `DefaultEndpointsProtocol=https;AccountName=<your_storage_account_name>;AccountKey=<your_account_key>;EndpointSuffix=core.windows.net`.
+    -  `AzureWebJobsStorage__accountName = mystorageaccount`: The right way, just assign System Managed Identity/UAMI and set the storage account. 
 3. Roles
     - Storage Blob Data Owner
     - Storage Queue Data Contributor - if app uses blob triggers
