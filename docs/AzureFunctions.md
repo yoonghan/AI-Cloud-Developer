@@ -52,19 +52,20 @@
 4. What is the method for authentication? Same as all other KeyVault access. I.e. enable System Managed Identity and grant permission to Secret for the roles it needs. Or UAMI with the right Group and authenticate via service principal.
 5. How to enable it locally? It mentions local.settings.json, but how?
 
-## Identity
+## Identity via Storage Blob
 1. Azure function requires AzureStorage. For
     - **Code Storage**: In serverless plans like Flex Consumption, your actual deployment packages (your Node.js or C# code) are saved in Azure Blob Storage. When the function wakes up, it pulls the code from here.  
     - **State and Coordination**: If your function scales out to 10 instances, the runtime uses Storage Blob leases to ensure that singleton processes—like a Timer Trigger—only fire exactly once, rather than 10 times.
     - **Internal Queuing**: The runtime relies heavily on hidden Azure Storage Queues to manage execution retries, coordinate scale-out behaviors, and handle the state machine for Durable Functions.
     - **Logging**: It serves as a temporary buffer for execution logs before they are ingested by Application Insights.
 2. Two ways:
-    -  `AzureWebJobsStorage`(Legacy): connection string with identity-based settings, includes accesskey. Still required if cross Tenant. Sample `DefaultEndpointsProtocol=https;AccountName=<your_storage_account_name>;AccountKey=<your_account_key>;EndpointSuffix=core.windows.net`.
+    -  `AzureWebJobsStorage`(Legacy/Local): connection string with identity-based settings, includes accesskey. Still required if cross Tenant or using Local. Sample `DefaultEndpointsProtocol=https;AccountName=<your_storage_account_name>;AccountKey=<your_account_key>;EndpointSuffix=core.windows.net`.
     -  `AzureWebJobsStorage__accountName = mystorageaccount`: The right way, just assign System Managed Identity/UAMI and set the storage account. 
 3. Roles
     - Storage Blob Data Owner
     - Storage Queue Data Contributor - if app uses blob triggers
     - Storage Account Contributor - our app uses blob triggers
+4. `"AzureWebJobsSecretStorageType": "Files"`, in local.settings.json is special. It means to not generate authentication key (see Authentication) that are non AuthLevel.ANONYMOUS to be stored in local file and not into blob storage.
 
 ## Authentication
 1. Split to:
@@ -84,3 +85,21 @@
     def health_check(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("OK", status_code=200)
     ```
+
+    ```javascript
+    app.http('HttpExample', {
+        methods: ['GET', 'POST'],
+        authLevel: 'anonymous',
+        handler: HttpExample
+    });
+    ```
+
+### Roles
+1. Azure Service Bus Data Receiver on the Service Bus namespace to receive messages
+2. Azure WebJobs Storage on the Storage Account to store and retrieve blobs, queues, and tables
+3. Azure Key Vault Secret User on the Key Vault
+
+## Tips.
+1. How to find in azure learn
+    - Search for Azure function, then use "spaces" to find. E.g. maxConcurrencyCall
+    - https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-service-bus?tabs=isolated-process%2Cextensionv5&pivots=programming-language-csharp

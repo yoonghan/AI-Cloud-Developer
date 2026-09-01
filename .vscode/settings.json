@@ -1,0 +1,9 @@
+{
+    "azureFunctions.deploySubpath": "projects/azurefunctions/serverless",
+    "azureFunctions.postDeployTask": "npm install (functions)",
+    "azureFunctions.projectLanguage": "TypeScript",
+    "azureFunctions.projectRuntime": "~4",
+    "azureFunctions.projectLanguageModel": 4,
+    "azureFunctions.projectSubpath": "projects/azurefunctions/serverless",
+    "azureFunctions.preDeployTask": "npm prune (functions)"
+}
