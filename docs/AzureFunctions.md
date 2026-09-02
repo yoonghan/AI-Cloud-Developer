@@ -103,3 +103,4 @@
 1. How to find in azure learn
     - Search for Azure function, then use "spaces" to find. E.g. maxConcurrencyCall
     - https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-service-bus?tabs=isolated-process%2Cextensionv5&pivots=programming-language-csharp
+2. To stream logs, You must configure Application Insights to stream logs on Linux Function Apps.
