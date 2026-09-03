@@ -7,20 +7,14 @@
       "command": "host start",
       "problemMatcher": "$func-node-watch",
       "isBackground": true,
-      "dependsOn": "npm watch (functions)",
-      "options": {
-        "cwd": "${workspaceFolder}/projects/azurefunctions/serverless"
-      }
+      "dependsOn": "npm watch (functions)"
     },
     {
       "type": "shell",
       "label": "npm build (functions)",
       "command": "npm run build",
       "dependsOn": "npm clean (functions)",
-      "problemMatcher": "$tsc",
-      "options": {
-        "cwd": "${workspaceFolder}/projects/azurefunctions/serverless"
-      }
+      "problemMatcher": "$tsc"
     },
     {
       "type": "shell",
@@ -32,37 +26,25 @@
         "kind": "build",
         "isDefault": true
       },
-      "isBackground": true,
-      "options": {
-        "cwd": "${workspaceFolder}/projects/azurefunctions/serverless"
-      }
+      "isBackground": true
     },
     {
       "type": "shell",
       "label": "npm install (functions)",
-      "command": "npm install",
-      "options": {
-        "cwd": "${workspaceFolder}/projects/azurefunctions/serverless"
-      }
+      "command": "npm install"
     },
     {
       "type": "shell",
       "label": "npm prune (functions)",
       "command": "npm prune --production",
       "dependsOn": "npm build (functions)",
-      "problemMatcher": [],
-      "options": {
-        "cwd": "${workspaceFolder}/projects/azurefunctions/serverless"
-      }
+      "problemMatcher": []
     },
     {
       "type": "shell",
       "label": "npm clean (functions)",
       "command": "npm run clean",
-      "dependsOn": "npm install (functions)",
-      "options": {
-        "cwd": "${workspaceFolder}/projects/azurefunctions/serverless"
-      }
+      "dependsOn": "npm install (functions)"
     }
   ]
 }

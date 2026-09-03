@@ -3,7 +3,7 @@
 ## Tiers
 1. Flex Consumption Plan - Pay as you go. This is Microsoft's new recommended serverless tier. It addresses the biggest historical drawbacks of Azure Functions by offering native Virtual Network (VNet) support and the ability to configure optional "always-ready" instances to eliminate cold starts. You are billed per second of active execution time.
 2. Legacy Consumption Plan - deprecated
-3. Premium Plan - Designed for mission-critical workloads requiring high performance. You pay a fixed monthly fee for a pool of pre-warmed compute instances (guaranteeing zero cold starts). It supports unbounded execution times and full VNet isolation.
+3. Premium Plan - The Premium plan supports unlimited execution duration (no short Consumption timeouts) and provides reliable VNet integration for secure backend access. Designed for mission-critical workloads requiring high performance. You pay a fixed monthly fee for a pool of pre-warmed compute instances (guaranteeing zero cold starts). It supports unbounded execution times and full VNet isolation.
 4. Dedicated (App Service) Plan - If you already pay for a dedicated App Service plan, you can run functions on it at no extra cost. Scaling is rule-based rather than purely event-driven, but instances remain constantly warm.
 5. Container Apps Plan - You can deploy containerized Azure Functions directly into an Azure Container Apps environment. This allows your serverless functions to run alongside your custom Node.js Hono API on the exact same VNet, utilizing the KEDA autoscaling rules you have already configured.
 
@@ -104,3 +104,8 @@
     - Search for Azure function, then use "spaces" to find. E.g. maxConcurrencyCall
     - https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-service-bus?tabs=isolated-process%2Cextensionv5&pivots=programming-language-csharp
 2. To stream logs, You must configure Application Insights to stream logs on Linux Function Apps.
+3. Durable Function is an extension of Azure Functions that lets you build stateful, long-running workflows in a serverless environment. 3 thing required:
+    - Client function (Optional) - Trigger an instance of a workflow.
+    - Orchestrator function (Required) - Controls the execution flow of the workflow.
+    - Activity function (Required) - Performs the actual work of the workflow.
+    
