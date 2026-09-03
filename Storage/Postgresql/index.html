@@ -1,0 +1,1978 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Han">
+      
+      
+        <link rel="canonical" href="https://yoonghan.github.io/AI-Cloud-Developer/Storage/Postgresql/">
+      
+      
+        <link rel="prev" href="../CosmosDb/">
+      
+      
+        <link rel="next" href="../Redis/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>PostgreSQL - AI Developer, covering both AI-200 and AI-103</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="azure" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#postgresql" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AI Developer, covering both AI-200 and AI-103" class="md-header__button md-logo" aria-label="AI Developer, covering both AI-200 and AI-103" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Developer, covering both AI-200 and AI-103
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PostgreSQL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="azure" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="azure" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../index.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Basic/" class="md-tabs__link">
+          
+  
+  
+  Topics
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../CosmosDb/" class="md-tabs__link">
+          
+  
+  
+  Storage
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Configuration/AppConfiguration/" class="md-tabs__link">
+          
+  
+  
+  Configuration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Monitoring/Telemetry/" class="md-tabs__link">
+          
+  
+  
+  Monitoring
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../General/ArtificialIntelligence/" class="md-tabs__link">
+          
+  
+  
+  General
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Exam_Preparation/Notes/" class="md-tabs__link">
+          
+  
+  
+  Exam
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AI Developer, covering both AI-200 and AI-103" class="md-nav__button md-logo" aria-label="AI Developer, covering both AI-200 and AI-103" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Developer, covering both AI-200 and AI-103
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../index.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Topics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureContainerRegistry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Container Registry (ACR)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureAppServices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure App services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureContainerInstance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Container Instance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureContainerApps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Container Apps (ACA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureKubernetes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Kubernetes Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureFoundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Foundry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureFunctions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Storage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CosmosDb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cosmos DB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PostgreSQL
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PostgreSQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extensions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute Tier
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Configuration/AppConfiguration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Application Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Configuration/KeyVault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Key Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Monitoring
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Monitoring/Telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Open telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    General
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    General
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../General/ArtificialIntelligence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artificial Intelligence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../General/AzureConative.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exam
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Exam
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Exam_Preparation/Notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exam Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Exam_Preparation/Labs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Labs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extensions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compute-tier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compute Tier
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="postgresql">PostgreSQL</h1>
+<ol>
+<li>Has predefined url <server-name>.postgres.database.azure.com</li>
+<li>Port 5432 for direct connection, need to configure on firewall</li>
+<li>Port 6432 for PGBounce</li>
+<li>Don't look for postgres, look for PostgreSQL in msdocs.</li>
+</ol>
+<h2 id="extensions">Extensions</h2>
+<p>Focus on AI
+1. <em>pgvector</em>: Enables vector data types and similarity search operations. You can store embeddings alongside relational data and perform approximate nearest neighbor searches. The "Implement vector search with Azure PostgreSQL" module covers pgvector in detail.
+2. <em>pg_trgm</em>: Provides trigram-based text similarity functions. Useful for fuzzy text matching, autocomplete features, and finding similar strings without exact matches.
+3. <em>hstore</em>: Adds a key-value data type for storing sets of key-value pairs within a single PostgreSQL value. Useful for semi-structured data that doesn't require the full flexibility of JSONB.
+4. Extensions need to be planned before creation. Determine whether your application needs vector similarity search (pgvector), full-text search, or geospatial capabilities (PostGIS).</p>
+<h2 id="compute-tier">Compute Tier</h2>
+<ol>
+<li><em>Burstable</em>: Compute tier suitable for workloads with low to moderate CPU usage and intermittent traffic, offering cost-effective scaling for development and testing environments. The CPU is capped at a low baseline (e.g., 10%). When idle, it saves up "CPU credits." When you run a heavy query, it bursts to 100% until the credits run out, and then it heavily throttles you.</li>
+<li><em>General Purpose</em>: Ideal for business applications requiring balanced CPU and memory resources, providing stable performance for steady workloads. It provides a balanced ratio of vCPUs to Memory (e.g., 4 vCPUs and 16 GB RAM).</li>
+<li><em>Memory Optimized</em>: Your application benefits from large in-memory caches or performs complex analytical queries. Anything relates to AI is Memory Optimized as calculation of distance needs to be loaded into memory.</li>
+<li>Tiers can be optimized later.</li>
+<li>Postgres is created with <code>az postgres flexible-server create</code>, single create is already deprecated. Just take it is the only way to create postgres.</li>
+</ol>
+<h1 id="authentication">Authentication</h1>
+<ol>
+<li>Uses username/password even for managed identity. Code:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">azure.identity</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
+
+<span class="n">credential</span> <span class="o">=</span> <span class="n">DefaultAzureCredential</span><span class="p">()</span>
+<span class="n">token</span> <span class="o">=</span> <span class="n">credential</span><span class="o">.</span><span class="n">get_token</span><span class="p">(</span><span class="s2">"https://ossrdbms-aad.database.windows.net/.default"</span><span class="p">)</span>
+<span class="c1"># Use token.token as the password in your connection string</span>
+</code></pre></div></li>
+<li>With PostgreSQL, the token you retrieve expires (usually in 1 hour). 
+    2.1 The Good: If a connection is already open, PostgreSQL does not drop the active connection when the token expires.
+    2.2 The Bad: If your application uses a Connection Pool (like PgBouncer or SQLAlchemy's connection pool), and the pool tries to open a new physical connection to the database 2 hours later using that original connection string, it will fail with an authentication error.
+    2.3 To prevent this, must ensure your code fetches a fresh token via credential.get_token()</li>
+<li>3 roles - Owner, Contributor and Reader.</li>
+<li>Data access layer permission is controlled in DB. 
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">ROLE</span><span class="w"> </span><span class="n">reader_user</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="n">LOGIN</span><span class="w"> </span><span class="n">PASSWORD</span><span class="w"> </span><span class="s1">'secure_password'</span><span class="p">;</span>
+<span class="c1">-- Grant read-only access to a specific table</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">documents</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">reader_user</span><span class="p">;</span>
+<span class="c1">-- Grant full read/write access to a table</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="p">,</span><span class="w"> </span><span class="k">INSERT</span><span class="p">,</span><span class="w"> </span><span class="k">UPDATE</span><span class="p">,</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">documents</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">app_writer_role</span><span class="p">;</span>
+<span class="c1">-- Enable RLS on the table</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">documents</span><span class="w"> </span><span class="n">ENABLE</span><span class="w"> </span><span class="k">ROW</span><span class="w"> </span><span class="k">LEVEL</span><span class="w"> </span><span class="k">SECURITY</span><span class="p">;</span>
+<span class="c1">-- Create a policy where users can only see their own rows</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="n">POLICY</span><span class="w"> </span><span class="n">user_isolation_policy</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">documents</span><span class="w"> </span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span>
+<span class="w">    </span><span class="k">USING</span><span class="w"> </span><span class="p">(</span><span class="n">user_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">current_setting</span><span class="p">(</span><span class="s1">'app.current_user_id'</span><span class="p">));</span>
+</code></pre></div></li>
+</ol>
+<h2 id="ssl-modes">SSL modes</h2>
+<ol>
+<li>disable: No encryption. Azure rejects connections using this mode.</li>
+<li>allow: Encrypts if the server requires it, but doesn't validate certificates.</li>
+<li>prefer: Encrypts if the server supports it, but doesn't validate certificates.</li>
+<li>require: Enforces encryption but doesn't validate certificates.</li>
+<li>verify-ca: Enforces encryption and validates the server certificate against trusted certificate authorities.</li>
+<li>verify-full: Enforces encryption, validates the CA, and confirms the certificate hostname matches the server.</li>
+<li>verify-full is recommended for production. Anyway just good to know. Just remember ca/full is a trust-store meaning you verify the server certificate.</li>
+<li>Connect with <code>postgresql://user@myserver.postgres.database.azure.com:6432/mydb?sslmode=require</code> or <code>postgresql://myuser:mypassword@myserver.postgres.database.azure.com/mydb?sslmode=verify-full&amp;sslrootcert=/etc/ssl/certs/ca-certificates.crt</code></li>
+<li>You still don't need a client certificate. You just need to download Microsoft's public Root CA certificate (a .crt or .pem file provided in the Azure documentation) and bundle it with your application.</li>
+</ol>
+<h2 id="customer-managed-keys">Customer managed keys</h2>
+<ol>
+<li>CMK is for data at rest.</li>
+<li>Not all compute sizes support CMK. Check the docs?!</li>
+</ol>
+<h2 id="pgbouncer-the-connection-pool">PGBouncer - the connection pool</h2>
+<ol>
+<li>To use connection pool, use pgbouncer.
+<div class="highlight"><pre><span></span><code>az<span class="w"> </span>postgres<span class="w"> </span>flexible-server<span class="w"> </span>parameter<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--resource-group<span class="w"> </span>myResourceGroup<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--server-name<span class="w"> </span>myserver<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span>pgbouncer.enabled<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--value<span class="w"> </span><span class="nb">true</span>
+</code></pre></div></li>
+</ol>
+<h2 id="data-types-for-ai-applications">Data types for AI applications</h2>
+<ol>
+<li>JSONB: Stores JSON data in a binary format that supports indexing and efficient querying. Use JSONB when data structure varies between records, you need to store nested objects or arrays, or schema flexibility is more important than strict typing. You can query JSONB fields using PostgreSQL's JSON operators.</li>
+<li>TEXT and VARCHAR: Both store variable-length character strings. TEXT has no length limit, while VARCHAR(n) enforces a maximum. In PostgreSQL, there's no performance difference between TEXT and unconstrained VARCHAR. Use VARCHAR(n) when you want the database to enforce a maximum length.</li>
+<li>TIMESTAMP WITH TIME ZONE: Always use TIMESTAMPTZ for temporal data in applications that might operate across time zones. PostgreSQL stores timestamps in UTC and converts them based on the session's time zone setting when displaying.</li>
+<li>BYTEA: Stores binary data as a byte array. Use it for small binary objects that need to be stored alongside relational data. For large binary files, consider Azure Blob Storage with a reference in the database.</li>
+<li>SERIAL and BIGSERIAL: Pseudo-types that create auto-incrementing integer columns. PostgreSQL automatically creates a sequence and sets the default. Use BIGSERIAL for tables that might exceed two billion rows.</li>
+</ol>
+<h2 id="new-queries">New queries</h2>
+<ol>
+<li>ILIKE - ignore case like</li>
+<li>NULLS FIRST / NULLS LAST - used ORDER BY</li>
+<li>COALESCE - defaults null values (title, 'Untitled')) </li>
+<li>Recursive - read https://learn.microsoft.com/en-us/training/modules/build-query-azure-database-postgresql/5-query-data?pivots=text</li>
+<li>CONFLICT - <code>ON CONFLICT (user_id, preference_key) DO UPDATE SET preference_value = EXCLUDED.preference_value, updated_at = CURRENT_TIMESTAMP;</code></li>
+<li>JSONB - is json <ul>
+<li>-&gt; to extract a JSON element as JSON</li>
+<li>-&gt;&gt; o extract it as text (for comparisons and display).</li>
+<li>
+<h1 id="returns-json">&gt; returns JSON</h1>
+</li>
+<li>
+<h1 id="returns-text">&gt;&gt; returns text</h1>
+</li>
+<li>Example 'metadata-&gt;&gt;'status' extracts the status field as text, while checkpoint_data#&gt;&gt;'{results,0,score}' navigates a nested path to get a specific value.</li>
+<li>? checks existance</li>
+<li>@&gt; test containment</li>
+<li><code>WHERE checkpoint_data @&gt; '{"status": "completed"}'</code>, or <code>WHERE metadata ? 'priority'</code></li>
+<li>jsonb_array_elements is for array to extract</li>
+</ul>
+</li>
+<li>RETURNING returns value</li>
+<li>CHECK  - CREATE TABLE tasks ( VARCHAR(2) CHECK (status IN ('pending')))</li>
+<li>All the magic of hybrid_search - https://learn.microsoft.com/en-us/training/modules/implement-vector-search-azure-database-postgresql/5-run-vector-similarity-search-semantic-retrieval?pivots=text</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span>
+<span class="w">    </span><span class="n">id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">title</span><span class="p">,</span>
+<span class="w">    </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">7</span><span class="w"> </span><span class="o">+</span>
+<span class="w">        </span><span class="n">ts_rank</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">'english'</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">),</span><span class="w"> </span><span class="n">plainto_tsquery</span><span class="p">(</span><span class="s1">'english'</span><span class="p">,</span><span class="w"> </span><span class="err">$</span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">hybrid_score</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">documents</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">'english'</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="o">@@</span><span class="w"> </span><span class="n">plainto_tsquery</span><span class="p">(</span><span class="s1">'english'</span><span class="p">,</span><span class="w"> </span><span class="err">$</span><span class="mi">2</span><span class="p">)</span>
+<span class="w">   </span><span class="k">OR</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">hybrid_score</span><span class="w"> </span><span class="k">DESC</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="k">DISTINCT</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="o">*</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">conversations</span><span class="w"> </span><span class="k">c</span><span class="p">,</span>
+<span class="w">     </span><span class="n">jsonb_array_elements_text</span><span class="p">(</span><span class="k">c</span><span class="p">.</span><span class="n">metadata</span><span class="o">-&gt;</span><span class="s1">'tags'</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">tag</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'support'</span><span class="p">;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="p">...</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">metadata</span><span class="w"> </span><span class="o">-&gt;&gt;</span><span class="w"> </span><span class="s1">'author'</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'John'</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">equivalent</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">CosmosDB</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="k">c</span><span class="p">.</span><span class="n">metadata</span><span class="p">.</span><span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'John'</span>
+
+<span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="o">@</span><span class="n">query</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">items</span><span class="w"> </span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="o">@</span><span class="n">query</span><span class="w"> </span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w">  </span>
+
+<span class="cm">/* CosmosDB </span>
+<span class="cm">SELECT TOP 5 c.id, VectorDistance(c.embedding, @query) AS score </span>
+<span class="cm">FROM c </span>
+<span class="cm">ORDER BY VectorDistance(c.embedding, @query)</span>
+<span class="cm">*</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">distance</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">documents</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">4</span><span class="w"> </span><span class="c1">-- You cannot use alias in WHERE, because select has not been exec.</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="w"> </span><span class="c1">-- You can use distance, but caveat is it will scan all and not use IVF or HNSW because it uses select.</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+
+
+<span class="c1">-- Dry method, use with</span>
+<span class="k">WITH</span><span class="w"> </span><span class="n">VectorDistances</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;=&gt;</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">distance</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">documents</span>
+<span class="p">)</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">distance</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">VectorDistances</span>
+<span class="k">WHERE</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">.</span><span class="mi">4</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">distance</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="vector">Vector</h2>
+<ol>
+<li>Must enable extension. See <a href="https://learn.microsoft.com/en-us/training/modules/implement-vector-search-azure-database-postgresql/2-store-query-embeddings-pgvector?pivots=text">link</a></li>
+<li>Must indicate field as <code>vector(1536)</code>, <code>CREATE TABLE vector table(embedding vector(1536))</code></li>
+<li>Manipulation of vector fields has to include ::vector.
+<div class="highlight"><pre><span></span><code><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">documents</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">category</span><span class="p">,</span><span class="w"> </span><span class="n">embedding</span><span class="p">)</span>
+<span class="k">VALUES</span>
+<span class="w">    </span><span class="p">(</span><span class="s1">'Document 1'</span><span class="p">,</span><span class="w"> </span><span class="s1">'Content...'</span><span class="p">,</span><span class="w"> </span><span class="s1">'legal'</span><span class="p">,</span><span class="w"> </span><span class="s1">'[0.123, 0.33,]'</span><span class="p">::</span><span class="n">vector</span><span class="p">),</span>
+</code></pre></div></li>
+<li>Policy types:<ul>
+<li>&lt;=&gt; = Cosine Distance (Use this for OpenAI text-embedding-3-small/large).</li>
+<li>&lt;-&gt; = Euclidean Distance (L2) (Use this if you are doing spatial math or older models).</li>
+<li>&lt;#&gt; = Inner Product.
+<div class="highlight"><pre><span></span><code><span class="k">SELECT</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;-&gt;</span><span class="w"> </span><span class="s1">'[0.0123, -0.0456, ...]'</span><span class="p">::</span><span class="n">vector</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">distance</span>
+<span class="k">FROM</span><span class="w"> </span><span class="n">documents</span>
+<span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">distance</span>
+<span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span>
+</code></pre></div></li>
+</ul>
+</li>
+<li>Vector types:<ul>
+<li>vector = 32bit</li>
+<li>halfvec = 16bit</li>
+<li>sparsevec = smart, it stores only vector with non 0. * HNSW indexes on sparsevec columns support up to 1,000 non-zero elements. I</li>
+</ul>
+</li>
+<li>Vector index have to match with data type, eg
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c1">-- halfvec type, halfvec index</span>
+<span class="w">    </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">        </span><span class="n">name</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">        </span><span class="n">embedding</span><span class="w"> </span><span class="n">halfvec</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_products_halfvec_hnsw</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="k">USING</span><span class="w"> </span><span class="n">hnsw</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="n">halfvec_cosine_ops</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">-- Select also needs halfvec</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">embedding</span><span class="w"> </span><span class="o">&lt;-&gt;</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span><span class="p">::</span><span class="n">halfvec</span><span class="w"> </span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">3</span>
+
+<span class="w">    </span><span class="c1">-- sparsevec type, sparsevec index</span>
+<span class="w">    </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">        </span><span class="n">name</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">        </span><span class="n">embedding</span><span class="w"> </span><span class="n">sparsevec</span><span class="p">(</span><span class="mi">1536</span><span class="p">)</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">-- IP mean inner product,cosine = cosine distance,L2 = euclidean distance</span>
+<span class="w">    </span><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_products_sparsevec_hnsw</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="k">USING</span><span class="w"> </span><span class="n">hnsw</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="n">sparsevec_ip_ops</span><span class="p">);</span>
+
+
+<span class="w">    </span><span class="c1">-- vector type, vector index</span>
+<span class="w">    </span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">id</span><span class="w"> </span><span class="nb">INT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">        </span><span class="n">name</span><span class="w"> </span><span class="nb">TEXT</span><span class="p">,</span>
+<span class="w">        </span><span class="n">embedding</span><span class="w"> </span><span class="n">vector</span><span class="p">(</span><span class="mi">1536</span><span class="p">)</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_products_vector_hnsw</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">products</span><span class="w"> </span><span class="k">USING</span><span class="w"> </span><span class="n">hnsw</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="n">vector_cosine_ops</span><span class="p">);</span>
+</code></pre></div></li>
+</ol>
+<h2 id="performance">Performance</h2>
+<ol>
+<li>use executeMany for multi line execution</li>
+<li>COPY is the fastest:
+<div class="highlight"><pre><span></span><code><span class="k">with</span><span class="w"> </span><span class="n">cur</span><span class="p">.</span><span class="k">copy</span><span class="p">(</span><span class="ss">"COPY messages (conversation_id, role, content) FROM STDIN"</span><span class="p">)</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="k">copy</span><span class="p">:</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">record</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">records</span><span class="p">:</span>
+<span class="w">        </span><span class="k">copy</span><span class="p">.</span><span class="n">write_row</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+</code></pre></div></li>
+<li>Check indexing performance with:<ul>
+<li>pg_stat_user_indexes, if zero scan means user doesn't query it.</li>
+<li>pg_stat_progress_create_index is used to monitor if index is being created, rebuilt.</li>
+<li>Use explain index <code>EXPLAIN ANALYZE</code>, to check query performance.</li>
+<li>Create index with <code>CREATE INDEX CONCURRENTLY</code></li>
+<li>Read here https://learn.microsoft.com/en-us/training/modules/implement-vector-search-azure-database-postgresql/4-manage-index-lifecycle-embedding-updates?pivots=text</li>
+</ul>
+</li>
+<li>How explain shows. See there is "idx_products_ivfflat" is being used.
+<div class="highlight"><pre><span></span><code><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="err">'QUERY</span><span class="w"> </span><span class="err">PLAN'</span><span class="p">:</span><span class="w"> </span><span class="err">'Limi</span><span class="kc">t</span><span class="w">  </span><span class="err">(cos</span><span class="kc">t</span><span class="err">=</span><span class="mf">1.00..78.46</span><span class="w"> </span><span class="err">rows=</span><span class="mi">3</span><span class="w"> </span><span class="err">wid</span><span class="kc">t</span><span class="err">h=</span><span class="mi">540</span><span class="err">)</span><span class="w"> </span><span class="err">(ac</span><span class="kc">tual</span><span class="w"> </span><span class="kc">t</span><span class="err">ime=</span><span class="mf">0.038..0.039</span><span class="w"> </span><span class="err">rows=</span><span class="mi">1</span><span class="w"> </span><span class="err">loops=</span><span class="mi">1</span><span class="err">)'</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="err">'QUERY</span><span class="w"> </span><span class="err">PLAN'</span><span class="p">:</span><span class="w"> </span><span class="err">'</span><span class="w">  </span><span class="mi">-</span><span class="err">&gt;</span><span class="w">  </span><span class="err">I</span><span class="kc">n</span><span class="err">dex</span><span class="w"> </span><span class="err">Sca</span><span class="kc">n</span><span class="w"> </span><span class="err">usi</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">idx_produc</span><span class="kc">ts</span><span class="err">_iv</span><span class="kc">fflat</span><span class="w"> </span><span class="err">o</span><span class="kc">n</span><span class="w"> </span><span class="err">produc</span><span class="kc">ts</span><span class="w">  </span><span class="err">(cos</span><span class="kc">t</span><span class="err">=</span><span class="mf">1.00..259.20</span><span class="w"> </span><span class="err">rows=</span><span class="mi">10</span><span class="w"> </span><span class="err">wid</span><span class="kc">t</span><span class="err">h=</span><span class="mi">540</span><span class="err">)</span><span class="w"> </span><span class="err">(ac</span><span class="kc">tual</span><span class="w"> </span><span class="kc">t</span><span class="err">ime=</span><span class="mf">0.037..0.038</span><span class="w"> </span><span class="err">rows=</span><span class="mi">1</span><span class="w"> </span><span class="err">loops=</span><span class="mi">1</span><span class="err">)'</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="err">'QUERY</span><span class="w"> </span><span class="err">PLAN'</span><span class="p">:</span><span class="w"> </span><span class="s2">"        Order By: (embedding &lt;#&gt; '[0.099975586,0.19995117,0.15002441,0.7998047,0.30004883,0.60009766,0.39990234,0.5]'::halfvec)"</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="err">'QUERY</span><span class="w"> </span><span class="err">PLAN'</span><span class="p">:</span><span class="w"> </span><span class="err">'Pla</span><span class="kc">nn</span><span class="err">i</span><span class="kc">n</span><span class="err">g</span><span class="w"> </span><span class="err">Time</span><span class="p">:</span><span class="w"> </span><span class="mf">0.017</span><span class="w"> </span><span class="err">ms'</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="err">'QUERY</span><span class="w"> </span><span class="err">PLAN'</span><span class="p">:</span><span class="w"> </span><span class="err">'Execu</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="w"> </span><span class="err">Time</span><span class="p">:</span><span class="w"> </span><span class="mf">0.046</span><span class="w"> </span><span class="err">ms'</span><span class="w"> </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div></li>
+<li>Cleaning diskspace
+<div class="highlight"><pre><span></span><code><span class="c1">-- Standard vacuum (runs concurrently)</span>
+<span class="k">VACUUM</span><span class="w"> </span><span class="n">documents</span><span class="p">;</span>
+
+<span class="c1">-- Full vacuum (reclaims more space but locks the table)</span>
+<span class="k">VACUUM</span><span class="w"> </span><span class="k">FULL</span><span class="w"> </span><span class="n">documents</span><span class="p">;</span>
+</code></pre></div></li>
+<li>What Happens if you create 2 indexes, IVFFlat and HNSW in same table?<ul>
+<li>If you seeded this table with 100,000 vectors and ran a similarity search, PostgreSQL still would not crash. Instead, the Query Planner takes over.</li>
+<li>Before executing your query, PostgreSQL evaluates the mathematical "cost" of using the HNSW index versus the IVFFlat index.</li>
+<li>It picks the winner (usually HNSW for pure speed) and completely ignores the loser for that specific query.</li>
+<li>The Penalty: You still pay the heavy RAM and storage costs to keep both indexes updated every time you insert a new row, even if only one is being used.</li>
+</ul>
+</li>
+</ol>
+<h3 id="indexing-vector">Indexing Vector</h3>
+<ol>
+<li>In vector<ul>
+<li>if not index it's an exact match of KNN (nearest neighbor)</li>
+<li>if indexed there are options of:<ul>
+<li>IVFFlat - uses cluster concept, cannot be created on empty table</li>
+<li>Hierarchical Navigable Small World (HNSW) - build when run</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Plugin index to enable diskAnn (uses memory)<ul>
+<li>only supports <em>Premium SSD</em></li>
+<li>only for General Purpose / Memory Optimized</li>
+<li>You need to write
+<div class="highlight"><pre><span></span><code><span class="n">az</span><span class="w"> </span><span class="n">postgres</span><span class="w"> </span><span class="n">flexible</span><span class="o">-</span><span class="n">server</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="err">\</span>
+<span class="c1">--resource-group $rg \</span>
+<span class="c1">--server-name $server_name \</span>
+<span class="c1">--name azure.extensions \</span>
+<span class="c1">--value vector,pg_diskann</span>
+
+<span class="c1">-- First, must enable before DiskANN</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="n">EXTENSION</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">vector</span><span class="p">;</span>
+
+<span class="c1">-- Second, enable Microsoft's DiskANN extension</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="n">EXTENSION</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">pg_diskann</span><span class="p">;</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">my_documents_diskann_idx</span><span class="w"> </span>
+<span class="k">ON</span><span class="w"> </span><span class="n">documents</span><span class="w"> </span>
+<span class="k">USING</span><span class="w"> </span><span class="n">diskann</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="n">vector_cosine_ops</span><span class="p">);</span>
+</code></pre></div></li>
+</ul>
+</li>
+<li>If you see "Seq Scan" instead of "Index Scan," check that:<ul>
+<li>The operator class matches the distance operator</li>
+<li>The index exists and is valid</li>
+<li>The table has enough rows (PostgreSQL might choose a sequential scan for small tables)</li>
+<li>The LIMIT clause is present (indexes are most effective with ORDER BY and LIMIT)</li>
+</ul>
+</li>
+<li>Vector should be changed frequently if there are insert/update. </li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">documents_embedding_idx</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">documents</span>
+<span class="k">USING</span><span class="w"> </span><span class="n">ivfflat</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="n">vector_cosine_ops</span><span class="p">)</span>
+<span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="n">lists</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">documents_embedding_idx</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">documents</span>
+<span class="k">USING</span><span class="w"> </span><span class="n">hnsw</span><span class="w"> </span><span class="p">(</span><span class="n">embedding</span><span class="w"> </span><span class="n">vector_cosine_ops</span><span class="p">)</span>
+<span class="k">WITH</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span><span class="w"> </span><span class="n">ef_construction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="p">);</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Factor</th>
+<th>IVFFlat</th>
+<th>HNSW</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Query performance</td>
+<td>Good</td>
+<td>Better</td>
+</tr>
+<tr>
+<td>Build time</td>
+<td>Faster</td>
+<td>Slower</td>
+</tr>
+<tr>
+<td>Memory usage</td>
+<td>Lower</td>
+<td>Higher</td>
+</tr>
+<tr>
+<td>Empty table support</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Insert performance</td>
+<td>Fast</td>
+<td>Moderate</td>
+</tr>
+<tr>
+<td>Recall at same latency</td>
+<td>Lower</td>
+<td>Higher</td>
+</tr>
+</tbody>
+</table>
+<p>Choose HNSW when:</p>
+<p>Query performance is your primary concern
+You need high recall (99%+) with low latency
+Your dataset doesn't change frequently
+Memory constraints aren't severe
+Choose IVFFlat when:</p>
+<p>Memory usage is a concern
+You need faster index builds for frequently changing data
+You're willing to trade some query performance for lower resource usage
+You can tolerate slightly lower recall</p>
+<h2 id="complete-this">Complete this</h2>
+<ol>
+<li>Important, Read about performance <a href="https://learn.microsoft.com/en-us/training/modules/optimize-vector-search-azure-database-postgresql/">link</a></li>
+<li>Integration with azure_ai</li>
+</ol>
+<div class="highlight"><pre><span></span><code>CREATE<span class="w"> </span>EXTENSION<span class="w"> </span>IF<span class="w"> </span>NOT<span class="w"> </span>EXISTS<span class="w"> </span>azure_ai<span class="p">;</span>
+
+--<span class="w"> </span><span class="m">2</span>.<span class="w"> </span>Configure<span class="w"> </span>azure_ai<span class="w"> </span>to<span class="w"> </span>talk<span class="w"> </span>to<span class="w"> </span>your<span class="w"> </span>Azure<span class="w"> </span>OpenAI<span class="w"> </span>endpoint
+--<span class="w"> </span><span class="o">(</span>You<span class="w"> </span>get<span class="w"> </span>these<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>Azure<span class="w"> </span>Portal<span class="w"> </span>-&gt;<span class="w"> </span>OpenAI<span class="w"> </span>Resource<span class="o">)</span>
+SELECT<span class="w"> </span>azure_ai.set_setting<span class="o">(</span><span class="s1">'azure_openai.endpoint'</span>,<span class="w"> </span><span class="s1">'https://&lt;your-resource-name&gt;.openai.azure.com'</span><span class="o">)</span><span class="p">;</span>
+SELECT<span class="w"> </span>azure_ai.set_setting<span class="o">(</span><span class="s1">'azure_openai.subscription_key'</span>,<span class="w"> </span><span class="s1">'&lt;your-api-key&gt;'</span><span class="o">)</span><span class="p">;</span>
+
+<span class="c1">##</span>
+const<span class="w"> </span><span class="nv">insertQuery</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span>
+<span class="w">        </span>INSERT<span class="w"> </span>INTO<span class="w"> </span>study_notes<span class="w"> </span><span class="o">(</span>topic,<span class="w"> </span>content,<span class="w"> </span>embedding<span class="o">)</span>
+<span class="w">        </span>VALUES<span class="w"> </span><span class="o">(</span>
+<span class="w">            </span><span class="nv">$1</span>,<span class="w"> </span>
+<span class="w">            </span><span class="nv">$2</span>,<span class="w"> </span>
+<span class="w">            </span>azure_openai.create_embeddings<span class="o">(</span><span class="s1">'text-embedding-ada-002'</span>,<span class="w"> </span><span class="nv">$2</span><span class="o">)</span>::vector
+<span class="w">        </span><span class="o">)</span>
+<span class="w">    </span><span class="sb">`</span><span class="p">;</span>
+<span class="c1">##</span>
+</code></pre></div>
+<h2 id="basic-db-stuffs">Basic DB stuffs</h2>
+<ol>
+<li>DELETE CASCADE</li>
+<li>Foreign keys</li>
+<li>Indexing</li>
+<li>LIMIT with conditional offset</li>
+</ol>
+<h2 id="geolocation-and-disaster-recovery-dr">Geolocation and Disaster Recovery (DR)</h2>
+<ol>
+<li>It's a primary, standby database architecture. One needs to be dormant. There is also a primary, secondary(read-only) and Azure let's 5 readonly, catch is that the url has to be handled with code (no unified url).</li>
+<li>High Availability (Same Region)<ul>
+<li>If you enable High Availability, Azure provisions a second standby PostgreSQL server in a different Availability Zone within the same region (e.g., Zone 1 and Zone 2). It uses Synchronous Replication. If the primary VM crashes, Azure automatically repoints your connection string to the standby server with zero data loss.</li>
+</ul>
+</li>
+<li>Disaster Recovery (Cross-Region Backups)<ul>
+<li>By default, backups are kept locally. For DR, you configure Geo-redundant backups. Azure continuously ships your database backups to a paired region (e.g., East US to West US). If East US is destroyed by a hurricane, you can restore a new Flexible Server in West US using those backups. (This has a higher Recovery Time Objective).</li>
+</ul>
+</li>
+<li>Geolocation (Cross-Region Read Replicas)<ul>
+<li>If you have users in Europe, but your database is in the US, you can spin up a Read Replica in Europe. Azure uses native PostgreSQL Asynchronous Replication to stream data changes to Europe.</li>
+<li>The Catch: The Europe server is Read-Only. All inserts/updates must still travel across the ocean to the primary US server. If the US goes down, you can manually "Promote" the European Read Replica to become the new primary writable database.</li>
+</ul>
+</li>
+</ol>
+<h2 id="partitioning">Partitioning</h2>
+<h3 id="ivfflat-lists-cluster-partitioning">IVFFlat: lists (Cluster Partitioning)</h3>
+<p>IVFFlat (Inverted File Flat) divides vector space into $K$ cluster regions (Voronoi cells) using k-means clustering.</p>
+<pre><code>   IVFFlat Index (lists = 4)
+</code></pre>
+<p>┌────────────┬────────────┐
+│ Cluster 1  │ Cluster 2  │
+│  •  •  x   │   x  •     │
+├────────────┼────────────┤
+│ Cluster 3  │ Cluster 4  │
+│   •  x     │   •  •  x  │
+└────────────┴────────────┘
+ (x = cluster centroid, • = vectors)
+- lists (Build-time parameter): Specifies the total number of cluster buckets created when the index is built.
+- For 100,000 records, lists = 100 means PostgreSQL clusters the data into 100 distinct buckets (~1,000 vectors per bucket).
+- Recommended Formula for lists:
+  - Tables up to 1 million rows: lists = rows / 1000 (e.g., 100,000 rows → lists = 100)
+  - Tables over 1 million rows: lists = sqrt(rows) (e.g., 1,000,000 rows → lists = 1000)
+- Query-Time Companion: ivfflat.probes
+    - lists controls how many buckets are created.
+    - At query time, ivfflat.probes (default = 1) controls how many of those buckets PostgreSQL searches inside.
+    - Increasing SET ivfflat.probes = 10; searches more buckets, increasing recall (accuracy) at the cost of slight search latency.</p>
+<h3 id="hnsw-m-and-ef_construction-graph-construction">HNSW: m and ef_construction (Graph Construction)</h3>
+<p>HNSW (Hierarchical Navigable Small World) builds a multi-layered graph where top layers act as "highway express tracks" for fast long-range hops, and bottom layers contain fine-grained local links.</p>
+<p>Layer 2 (Highway)    [Node A] ---------------------------&gt; [Node Z]
+                        │                                     │
+Layer 1 (Local)      [Node A] ------&gt; [Node F] ------------&gt; [Node Z]
+                        │                │                    │
+Layer 0 (Base Data)  [Node A] -&gt; [B] -&gt; [F] -&gt; [G] -&gt; [K] -&gt; [Node Z]</p>
+<ul>
+<li>m (Max Connections Per Node)</li>
+<li>What it means: The maximum number of outgoing bi-directional links (edges) connected to each node in the graph layers.</li>
+<li>Default: m = 16.</li>
+<li>Impact:<ul>
+<li>Higher m (e.g., 32 or 64): Stronger graph connectivity, higher search recall/accuracy for complex high-dimensional vectors, but uses more RAM and takes longer to build/update.</li>
+<li>Lower m (e.g., 8 or 16): Smaller index size on disk/RAM, faster inserts/updates.</li>
+</ul>
+</li>
+<li>ef_construction (Search Depth During Index Building)</li>
+<li>What it means: The size of the dynamic candidate list evaluated when inserting a new vector into the graph during index creation.</li>
+<li>Default: ef_construction = 64.</li>
+<li>Impact:<ul>
+<li>Higher ef_construction (e.g., 128 or 256): Produces a higher quality graph topology with optimal connections, leading to higher search accuracy at query time, but index creation time increases.</li>
+<li>Lower ef_construction (e.g., 32): Faster index creation, but graph quality and query recall may be lower.</li>
+</ul>
+</li>
+<li>Query-Time Companion: hnsw.ef_search<ul>
+<li>ef_construction controls graph quality during index creation.</li>
+<li>At query time, hnsw.ef_search (default = 40) controls how many candidate nodes are evaluated during a vector search. You can tune this dynamically per session (SET hnsw.ef_search = 100;).</li>
+</ul>
+</li>
+</ul>
+<h3 id="quick-comparison-summary">Quick Comparison Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Index Type</th>
+<th>When it is used</th>
+<th>What it controls</th>
+<th>Standard / Rule of Thumb</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lists</td>
+<td>IVFFlat</td>
+<td>Index Creation</td>
+<td>Number of cluster buckets created</td>
+<td>rows / 1000 (up to 1M rows)</td>
+</tr>
+<tr>
+<td>ivfflat.probes</td>
+<td>IVFFlat</td>
+<td>Query Execution</td>
+<td>Number of buckets searched per query</td>
+<td>1 default (increase for higher recall)</td>
+</tr>
+<tr>
+<td>m</td>
+<td>HNSW</td>
+<td>Index Creation</td>
+<td>Max graph connections per node</td>
+<td>16 (8–64 depending on accuracy/RAM)</td>
+</tr>
+<tr>
+<td>ef_construction</td>
+<td>HNSW</td>
+<td>Index Creation</td>
+<td>Search depth used during graph building</td>
+<td>64 (128–256 for higher graph quality)</td>
+</tr>
+<tr>
+<td>hnsw.ef_search  HNSW    Query Execution Dynamic candidate pool during search</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
