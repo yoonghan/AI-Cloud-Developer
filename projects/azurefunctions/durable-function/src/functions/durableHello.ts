@@ -29,6 +29,13 @@ const durableHelloOrchestrator: OrchestrationHandler = function* (context: Orche
     outputs.push(yield context.df.callActivity(activityName, 'Seattle'));
     outputs.push(yield context.df.callActivity(activityName, 'Cairo'));
 
+    /**FYI for parallel instead of sequence
+     * const parallelTasks = [context.df.call.Activity(activityName, 'Tokyo'), context.df.callActivity(activityName, 'Seattle'), context.df.callActivity(activityName, 'Cairo')];
+     * // Wait for ALL parallel tasks to finish
+     * const results = yield context.df.Task.all(parallelTasks);
+     * outputs.push(...results);
+     */
+
     return outputs;
 };
 
