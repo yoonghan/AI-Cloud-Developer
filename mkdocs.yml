@@ -44,6 +44,11 @@ nav:
     - Configuration/KeyVault.md
   - Monitoring:
     - Monitoring/Telemetry.md
+    - Monitoring/Monitor.md
+  - MessagingSystem:
+    - MessagingSystem/EventGrid.md
+    - MessagingSystem/EventHub.md
+    - MessagingSystem/ServiceBus.md
   - General:
     - General/ArtificialIntelligence.md
     - General/AzureConative.md
