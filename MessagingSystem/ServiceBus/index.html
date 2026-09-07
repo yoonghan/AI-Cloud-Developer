@@ -1,0 +1,2152 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <meta name="author" content="Han">
+      
+      
+        <link rel="canonical" href="https://yoonghan.github.io/AI-Cloud-Developer/MessagingSystem/ServiceBus/">
+      
+      
+        <link rel="prev" href="../EventHub/">
+      
+      
+        <link rel="next" href="../../General/ArtificialIntelligence/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Service Bus - AI Developer, covering both AI-200 and AI-103</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="azure" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#service-bus" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AI Developer, covering both AI-200 and AI-103" class="md-header__button md-logo" aria-label="AI Developer, covering both AI-200 and AI-103" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Developer, covering both AI-200 and AI-103
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Service Bus
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="azure" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="azure" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../index.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Basic/" class="md-tabs__link">
+          
+  
+  
+  Topics
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Storage/CosmosDb/" class="md-tabs__link">
+          
+  
+  
+  Storage
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Configuration/AppConfiguration/" class="md-tabs__link">
+          
+  
+  
+  Configuration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Monitoring/Telemetry/" class="md-tabs__link">
+          
+  
+  
+  Monitoring
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../EventGrid.md" class="md-tabs__link">
+          
+  
+  
+  MessagingSystem
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../General/ArtificialIntelligence/" class="md-tabs__link">
+          
+  
+  
+  General
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Exam_Preparation/Notes/" class="md-tabs__link">
+          
+  
+  
+  Exam
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AI Developer, covering both AI-200 and AI-103" class="md-nav__button md-logo" aria-label="AI Developer, covering both AI-200 and AI-103" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Developer, covering both AI-200 and AI-103
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../index.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Topics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Topics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureContainerRegistry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Container Registry (ACR)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureAppServices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure App services
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureContainerInstance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Container Instance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureContainerApps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Container Apps (ACA)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureKubernetes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Kubernetes Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureFoundry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Foundry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AzureFunctions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Storage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Storage/CosmosDb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cosmos DB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Storage/Postgresql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PostgreSQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Storage/Redis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Redis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Configuration/AppConfiguration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Application Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Configuration/KeyVault/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Key Vault
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Monitoring
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Monitoring/Telemetry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Open telemetry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Monitoring/Monitor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Azure Monitor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MessagingSystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MessagingSystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EventGrid.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EventHub/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Hub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Service Bus
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Service Bus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#anatomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anatomy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tiers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#express-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Express Entities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#premium-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Premium Features
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-event-grid-and-event-hubs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison with Event Grid and Event Hubs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-rules-subscriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering &amp; Rules (Subscriptions)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-sessions-message-grouping-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message Sessions (Message Grouping &amp; Ordering)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deduplication-duplicate-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deduplication (Duplicate Detection)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch-messaging-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Messaging Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reliability-settling-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reliability &amp; Settling Messages
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reliability &amp; Settling Messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auto-forwarding-vs-deferral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-Forwarding vs Deferral
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dead-letter-queues-dlq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead-Letter Queues (DLQ)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    General
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    General
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../General/ArtificialIntelligence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artificial Intelligence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../General/AzureConative.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    None
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exam
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Exam
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Exam_Preparation/Notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exam Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Exam_Preparation/Labs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Labs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#anatomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anatomy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tiers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#express-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Express Entities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#premium-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Premium Features
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-event-grid-and-event-hubs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison with Event Grid and Event Hubs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filtering-rules-subscriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering &amp; Rules (Subscriptions)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-sessions-message-grouping-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message Sessions (Message Grouping &amp; Ordering)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deduplication-duplicate-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deduplication (Duplicate Detection)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#batch-messaging-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Messaging Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reliability-settling-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reliability &amp; Settling Messages
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reliability &amp; Settling Messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auto-forwarding-vs-deferral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto-Forwarding vs Deferral
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dead-letter-queues-dlq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dead-Letter Queues (DLQ)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="service-bus">Service Bus</h1>
+<h2 id="anatomy">Anatomy</h2>
+<ol>
+<li><strong>Message Structure</strong>:<ul>
+<li><strong>Body</strong>: Message payload (bytes, JSON, text, etc.).</li>
+<li><strong>Application Properties</strong>: Custom key-value metadata defined by the application, used for routing, filtering, and tracking.</li>
+<li><strong>System Properties</strong>: System-defined metadata managed by Service Bus (e.g., <code>message_id</code>, <code>correlation_id</code>, <code>content_type</code>, <code>time_to_live</code>, <code>session_id</code>, <code>sequence_number</code>, <code>partition_key</code>, <code>to</code>, <code>reply_to</code>, <code>subject</code>).</li>
+</ul>
+</li>
+<li><strong>Distributed Tracing</strong>:<ul>
+<li>Take note of <code>traceparent</code> (W3C Trace Context spec). It is passed in <code>application_properties</code> for distributed tracing across services:
+<div class="highlight"><pre><span></span><code><span class="n">message</span> <span class="o">=</span> <span class="n">ServiceBusMessage</span><span class="p">(</span>
+    <span class="n">body</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">request_payload</span><span class="p">),</span>
+    <span class="n">content_type</span><span class="o">=</span><span class="s2">"application/json"</span><span class="p">,</span>
+    <span class="n">message_id</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span>
+    <span class="n">correlation_id</span><span class="o">=</span><span class="s2">"req-abc-12345"</span><span class="p">,</span>
+    <span class="n">application_properties</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"traceparent"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"00-</span><span class="si">{</span><span class="nb">format</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">trace_id</span><span class="p">,</span><span class="w"> </span><span class="s1">'032x'</span><span class="p">)</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">format</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">span_id</span><span class="p">,</span><span class="w"> </span><span class="s1">'016x'</span><span class="p">)</span><span class="si">}</span><span class="s2">-01"</span><span class="p">,</span>
+        <span class="s2">"model_name"</span><span class="p">:</span> <span class="s2">"gpt-4o"</span><span class="p">,</span>
+        <span class="s2">"priority"</span><span class="p">:</span> <span class="s2">"standard"</span><span class="p">,</span>
+        <span class="s2">"document_type"</span><span class="p">:</span> <span class="s2">"contract"</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div></li>
+</ul>
+</li>
+</ol>
+<h2 id="tiers">Tiers</h2>
+<ul>
+<li><strong>Basic</strong>:<ul>
+<li>Ideal for low-throughput applications, dev/test scenarios.</li>
+<li>Supports <strong>Queues only</strong> (no Topics/Subscriptions, no Sessions, no Transactions, no Duplicate Detection).</li>
+<li>Maximum message size: <strong>256 KB</strong>.</li>
+</ul>
+</li>
+<li><strong>Standard</strong>:<ul>
+<li>Shared multi-tenant capacity billed per operation.</li>
+<li>Supports Topics, Subscriptions, Sessions, Transactions, Scheduled messages, Auto-forwarding, and Duplicate detection.</li>
+<li>Queue/Topic max storage capacity: 1 GB to 80 GB (with partitioning).</li>
+<li>Maximum message size: <strong>256 KB</strong>.</li>
+</ul>
+</li>
+<li><strong>Premium</strong>:<ul>
+<li>High-throughput, enterprise mission-critical applications.</li>
+<li>Dedicated resources (Messaging Units) with predictable latency and isolation.</li>
+<li>Queue/Topic max storage capacity: up to <strong>1 TB</strong>.</li>
+<li>Maximum message size: up to <strong>100 MB</strong> (default 1 MB, configurable up to 100 MB).</li>
+</ul>
+</li>
+<li>Reference: <a href="https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-premium-messaging">Service Bus Premium Messaging</a></li>
+</ul>
+<h2 id="express-entities">Express Entities</h2>
+<ol>
+<li>Express entities hold messages in memory temporarily before writing them to persistent storage for lower latency.</li>
+<li>Supported in <strong>Basic and Standard</strong> tiers.</li>
+<li><strong>Not supported in Premium tier</strong>. Express messaging must be disabled on entities prior to migrating/upgrading a namespace from Standard to Premium.</li>
+</ol>
+<h2 id="premium-features">Premium Features</h2>
+<ol>
+<li><strong>Core Capabilities</strong>:<ul>
+<li>Dedicated Messaging Units (MUs) with resource isolation (predictable throughput/latency).</li>
+<li>Dynamic scaling: 1, 2, 4, 8, or 16 MUs (scalable up/down).</li>
+<li>Large messages: Up to 100 MB payload size.</li>
+<li>Network security: Virtual Network (VNet) integration, IP Firewall, and Private Endpoints (Private Link).</li>
+<li>Geo-Disaster Recovery (active-passive metadata pairing across regions).</li>
+<li>Java Message Service (JMS) 2.0 API support.</li>
+</ul>
+</li>
+<li><strong>Messaging Units (MUs)</strong>:<ul>
+<li>Dedicated CPU and memory allocation per unit.</li>
+<li>Billing is based hourly on allocated Messaging Units rather than operation counts.</li>
+</ul>
+</li>
+</ol>
+<h2 id="comparison-with-event-grid-and-event-hubs">Comparison with Event Grid and Event Hubs</h2>
+<ul>
+<li><strong>Azure Event Grid</strong>: Event-driven reactive routing (discrete notifications).</li>
+<li><strong>Azure Event Hubs</strong>: Big data streaming ingestion engine (time-ordered event log with Apache Kafka compatibility).</li>
+<li><strong>Azure Service Bus</strong>: Enterprise transactional messaging (Queues and Topics for workflows and high-value payloads).</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Event Grid</th>
+<th>Event Hubs</th>
+<th>Service Bus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primary Purpose</td>
+<td>Reactive event routing</td>
+<td>Big data streaming and ingestion</td>
+<td>Enterprise transactional messaging</td>
+</tr>
+<tr>
+<td>Data Model</td>
+<td>Events (discrete notifications)</td>
+<td>Event streams (time-ordered series)</td>
+<td>Messages (high-value payloads)</td>
+</tr>
+<tr>
+<td>Delivery Guarantee</td>
+<td>At least once</td>
+<td>At least once</td>
+<td>At least once (optional ordered, exactly once with sessions + deduplication)</td>
+</tr>
+<tr>
+<td>When to Use</td>
+<td>React to status changes, serverless architectures</td>
+<td>Telemetry, distributed data streaming, real-time analytics</td>
+<td>Order processing, financial transactions, workflows</td>
+</tr>
+</tbody>
+</table>
+<h2 id="filtering-rules-subscriptions">Filtering &amp; Rules (Subscriptions)</h2>
+<p>Rules evaluate messages published to a topic and route matching messages to the specific subscription.</p>
+<blockquote>
+<p>[!IMPORTANT]
+<strong>Default <code>$Default</code> Rule</strong>: Every new subscription is automatically created with a rule named <code>$Default</code> using a <code>TrueRuleFilter</code> (matches all messages). When adding custom rules, you must <strong>remove the <code>$Default</code> rule</strong> if you want the subscription to receive <em>only</em> filtered messages!
+1. Filter is an "OR", means if color=red and color!=red, evaluates as true.
+2. <strong>SQL Filter</strong>:
+<div class="highlight"><pre><span></span><code><span class="k">await</span><span class="w"> </span><span class="n">adminClient</span><span class="p">.</span><span class="n">CreateRuleAsync</span><span class="p">(</span><span class="n">topicName</span><span class="p">,</span><span class="w"> </span><span class="n">subscriptionName</span><span class="p">,</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CreateRuleOptions</span><span class="w"> </span>
+<span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="n">Name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"RedOrdersWithAction"</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Filter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SqlRuleFilter</span><span class="p">(</span><span class="s">"user.color = 'red'"</span><span class="p">),</span>
+<span class="w">    </span><span class="n">Action</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SqlRuleAction</span><span class="p">(</span><span class="s">"SET user.quantity = user.quantity / 2;"</span><span class="p">)</span>
+<span class="p">});</span>
+</code></pre></div>
+3. <strong>Boolean Filter</strong>:
+<div class="highlight"><pre><span></span><code><span class="k">await</span><span class="w"> </span><span class="n">adminClient</span><span class="p">.</span><span class="n">CreateSubscriptionAsync</span><span class="p">(</span>
+<span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="nf">CreateSubscriptionOptions</span><span class="p">(</span><span class="n">topicName</span><span class="p">,</span><span class="w"> </span><span class="n">subscriptionAllOrders</span><span class="p">),</span><span class="w"> </span>
+<span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="nf">CreateRuleOptions</span><span class="p">(</span><span class="s">"AllOrders"</span><span class="p">,</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">TrueRuleFilter</span><span class="p">()));</span><span class="w"> </span><span class="c1">// Matches all messages</span>
+</code></pre></div>
+4. <strong>Correlation Filter</strong>:
+<div class="highlight"><pre><span></span><code><span class="c1">// Match messages with Subject = "red" and CorrelationId = "high"</span>
+<span class="k">await</span><span class="w"> </span><span class="n">adminClient</span><span class="p">.</span><span class="n">CreateSubscriptionAsync</span><span class="p">(</span>
+<span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="nf">CreateSubscriptionOptions</span><span class="p">(</span><span class="n">topicName</span><span class="p">,</span><span class="w"> </span><span class="s">"HighPriorityRedOrders"</span><span class="p">),</span><span class="w"> </span>
+<span class="w">    </span><span class="k">new</span><span class="w"> </span><span class="nf">CreateRuleOptions</span><span class="p">(</span><span class="s">"HighPriorityRedOrdersRule"</span><span class="p">,</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CorrelationRuleFilter</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Subject</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"red"</span><span class="p">,</span><span class="w"> </span><span class="n">CorrelationId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"high"</span><span class="w"> </span><span class="p">}));</span>
+</code></pre></div></p>
+</blockquote>
+<h2 id="message-sessions-message-grouping-ordering">Message Sessions (Message Grouping &amp; Ordering)</h2>
+<ol>
+<li><strong>FIFO Guarantee</strong>: Used to group related messages for strict First-In-First-Out (FIFO) sequential processing by a single consumer.</li>
+<li><strong>Mechanism</strong>: When messages share a <code>SessionId</code> (e.g., <code>SessionId = 'Invoice-123'</code>), Service Bus locks that session to a single receiver. No other receiver can process messages from that session until the lock is released or expires.</li>
+<li><strong>Session State</strong>: Receivers can store state data specific to a session (<code>GetSessionState</code> / <code>SetSessionState</code>), enabling stateful workflow execution.</li>
+<li><strong>Requirement</strong>: <code>RequiresSession</code> must be enabled at <strong>queue or subscription creation time</strong> (cannot be enabled retroactively).</li>
+</ol>
+<h2 id="deduplication-duplicate-detection">Deduplication (Duplicate Detection)</h2>
+<ol>
+<li><strong>MessageId</strong>: Deduplication relies on tracking unique <code>MessageId</code> values within a defined time window.</li>
+<li><strong>Creation Constraint</strong>: Must be enabled (<strong><code>RequiresDuplicateDetection = true</code></strong>) <strong>only during entity creation</strong>.</li>
+<li><strong>Deduplication Window</strong>: Configurable duration (default is 10 minutes, selectable between 20 seconds and 7 days).</li>
+<li><strong>Behavior on Duplicate</strong>: If a message with an already-seen <code>MessageId</code> arrives within the window, Service Bus <strong>accepts the send call (returns success to producer) but drops/ignores the duplicate payload</strong>. It does <em>not</em> enqueue or process the duplicate, nor does it delete existing messages.</li>
+<li><strong>Trade-off</strong>: Increases processing overhead on Service Bus. If a producer bug reuses the same <code>MessageId</code> for distinct payloads, only the first payload will be delivered and subsequent ones will be dropped.</li>
+<li>Note that MessageId must be set by the client, not by the Service Bus. If MessageId is not set, Service Bus will generate one, but it will not be unique.</li>
+<li><em>Broker memory</em>: The deduplication table is stored in the broker's memory, and only at limit. If same message_id arrives at 21 seconds (if configured as 20seconds), same message_id are saved.</li>
+</ol>
+<h2 id="patterns">Patterns</h2>
+<ol>
+<li><strong>Claim-Check Pattern</strong>: For large payloads exceeding tier limits, upload the payload to Azure Blob Storage and send only the blob SAS URI / reference metadata in the Service Bus message.</li>
+<li><strong>Time-to-Live (TTL)</strong>: Expiration timer set on messages or entities. Expired messages are either deleted or automatically moved to the DLQ (<code>EnableDeadLetteringOnMessageExpiration = true</code>).</li>
+<li><strong>Batching</strong>: Grouping multiple messages into a single network send call (<code>ServiceBusMessageBatch</code>) to reduce network round-trip overhead.</li>
+</ol>
+<h3 id="batch-messaging-behavior">Batch Messaging Behavior</h3>
+<ul>
+<li>Maximum batch size is bounded by the <strong>maximum payload size limit of the tier</strong> (256 KB for Standard, 1 MB / up to 100 MB for Premium).</li>
+<li>SDK method <code>add_message()</code> / <code>try_add_message()</code> returns <code>false</code> or raises an exception when adding a message would exceed the total batch size limit.</li>
+</ul>
+<h2 id="reliability-settling-messages">Reliability &amp; Settling Messages</h2>
+<ol>
+<li><strong>Receive &amp; Delete (<code>ReceiveAndDelete</code>)</strong>:<ul>
+<li>Message is deleted from Service Bus immediately upon receipt.</li>
+<li>Higher performance, but risks message loss if consumer crashes during processing (at-most-once delivery).</li>
+</ul>
+</li>
+<li><strong>Peek-Lock (<code>PeekLock</code>)</strong>:<ul>
+<li>Message is locked for processing for a specified duration (default 60s, max 5 minutes). The consumer must explicitly settle the message (at-least-once delivery):</li>
+<li><strong>Complete</strong>: Acknowledges successful processing and permanently removes the message from the queue.</li>
+<li><strong>Abandon</strong>: Releases the lock immediately, placing the message back on the queue for another consumer to pick up.</li>
+<li><strong>Dead-Letter</strong>: Moves the message to the Dead-Letter sub-queue along with <code>dead_letter_reason</code> and <code>dead_letter_error_description</code>.</li>
+<li><strong>Defer</strong>: Leaves the message in the main queue but skips it during normal receives. The message can later be retrieved explicitly by its <code>sequence_number</code> using <code>receive_deferred_messages()</code>. Useful when processing dependencies are not yet met.</li>
+</ul>
+</li>
+<li><strong>Poison Messages (<code>max_delivery_count</code>)</strong>:<ul>
+<li>Tracks delivery attempts. If a message is received and abandoned/timed out more than <code>max_delivery_count</code> times (default 10), Service Bus automatically transfers it to the DLQ.</li>
+</ul>
+</li>
+<li><strong>Auto-Forwarding</strong>:<ul>
+<li>Automatically forwards messages from a queue/subscription to another target queue or topic within the <strong>same namespace</strong>.</li>
+</ul>
+</li>
+<li><strong>Auto-Lock Renewal</strong>:<ul>
+<li>Client-side background task (<code>AutoLockRenewer</code>) that automatically extends the lock duration while long-running processing is active, up to a configured maximum duration limit.</li>
+</ul>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="k">with</span> <span class="n">ServiceBusClient</span><span class="p">(</span>
+    <span class="n">fully_qualified_namespace</span><span class="o">=</span><span class="s2">"&lt;namespace&gt;.servicebus.windows.net"</span><span class="p">,</span>
+    <span class="n">credential</span><span class="o">=</span><span class="n">credential</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">renewer</span> <span class="o">=</span> <span class="n">AutoLockRenewer</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">get_queue_receiver</span><span class="p">(</span>
+        <span class="n">queue_name</span><span class="o">=</span><span class="s2">"inference-requests"</span><span class="p">,</span>
+        <span class="n">max_wait_time</span><span class="o">=</span><span class="mi">30</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">receiver</span><span class="o">.</span><span class="n">receive_messages</span><span class="p">():</span>
+            <span class="c1"># Renew the lock for up to 10 minutes</span>
+            <span class="n">renewer</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">receiver</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">max_lock_renewal_duration</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">run_long_inference</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">receiver</span><span class="o">.</span><span class="n">complete_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">renewer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="auto-forwarding-vs-deferral">Auto-Forwarding vs Deferral</h3>
+<ol>
+<li><strong>Auto-Forwarding (Routing)</strong>: Entity-level setting. Seamlessly routes messages or dead-lettered messages (<code>ForwardDeadLetteredMessagesTo</code>) from a queue/subscription to another target entity in the same namespace (e.g., consolidating dead-letter messages from multiple topics into a single central queue).</li>
+<li><strong>Message Deferral (Pausing)</strong>: Consumer-driven action. Leaves the message in place while allowing other messages to be processed, holding the deferred message for later explicit retrieval by its <code>sequence_number</code>.</li>
+</ol>
+<h3 id="dead-letter-queues-dlq">Dead-Letter Queues (DLQ)</h3>
+<ol>
+<li><strong>Built-in Sub-queue</strong>: Every queue and topic subscription automatically has a built-in Dead-Letter sub-queue (<code>$DeadLetterQueue</code>). It is <strong>not</strong> a separate top-level queue.</li>
+<li><strong>Address Path</strong>:<ul>
+<li>Queue DLQ: <code>&lt;queue-name&gt;/$DeadLetterQueue</code></li>
+<li>Subscription DLQ: <code>&lt;topic-name&gt;/Subscriptions/&lt;subscription-name&gt;/$DeadLetterQueue</code></li>
+</ul>
+</li>
+<li><strong>Isolation in Topics</strong>: Subscriptions operate independently. If Subscription B fails processing and dead-letters a message, it moves to Subscription B's DLQ only. Other subscriptions remain completely unaffected.</li>
+<li><strong>System Reservation</strong>: You <strong>cannot</strong> manually create a queue or topic named <code>$DeadLetterQueue</code>. The <code>$DeadLetterQueue</code> path is a reserved system sub-entity path managed automatically by Azure Service Bus.</li>
+<li>This is a service that can be triggered by broker and client. Broker e.g. if limit is 7 times, it will auto move to DLQ. Client e.g. if client code explicitly dead-letter the message. NOTE: All other like deduplication, message_id, these are broker-controlled.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
