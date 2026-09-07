@@ -73,8 +73,8 @@ Rules evaluate messages published to a topic and route matching messages to the 
 
 > [!IMPORTANT]
 > **Default `$Default` Rule**: Every new subscription is automatically created with a rule named `$Default` using a `TrueRuleFilter` (matches all messages). When adding custom rules, you must **remove the `$Default` rule** if you want the subscription to receive *only* filtered messages!
-
-1. **SQL Filter**:
+1. Filter is an "OR", means if color=red and color!=red, evaluates as true.
+2. **SQL Filter**:
 ```csharp
 await adminClient.CreateRuleAsync(topicName, subscriptionName, new CreateRuleOptions 
 { 
@@ -83,13 +83,13 @@ await adminClient.CreateRuleAsync(topicName, subscriptionName, new CreateRuleOpt
     Action = new SqlRuleAction("SET user.quantity = user.quantity / 2;")
 });
 ```
-2. **Boolean Filter**:
+3. **Boolean Filter**:
 ```csharp
 await adminClient.CreateSubscriptionAsync(
     new CreateSubscriptionOptions(topicName, subscriptionAllOrders), 
     new CreateRuleOptions("AllOrders", new TrueRuleFilter())); // Matches all messages
 ```
-3. **Correlation Filter**:
+4. **Correlation Filter**:
 ```csharp
 // Match messages with Subject = "red" and CorrelationId = "high"
 await adminClient.CreateSubscriptionAsync(
@@ -109,6 +109,8 @@ await adminClient.CreateSubscriptionAsync(
 3. **Deduplication Window**: Configurable duration (default is 10 minutes, selectable between 20 seconds and 7 days).
 4. **Behavior on Duplicate**: If a message with an already-seen `MessageId` arrives within the window, Service Bus **accepts the send call (returns success to producer) but drops/ignores the duplicate payload**. It does *not* enqueue or process the duplicate, nor does it delete existing messages.
 5. **Trade-off**: Increases processing overhead on Service Bus. If a producer bug reuses the same `MessageId` for distinct payloads, only the first payload will be delivered and subsequent ones will be dropped.
+6. Note that MessageId must be set by the client, not by the Service Bus. If MessageId is not set, Service Bus will generate one, but it will not be unique.
+7. *Broker memory*: The deduplication table is stored in the broker's memory, and only at limit. If same message_id arrives at 21 seconds (if configured as 20seconds), same message_id are saved.
 
 ## Patterns
 1. **Claim-Check Pattern**: For large payloads exceeding tier limits, upload the payload to Azure Blob Storage and send only the blob SAS URI / reference metadata in the Service Bus message.
@@ -165,3 +167,4 @@ with ServiceBusClient(
     - Subscription DLQ: `<topic-name>/Subscriptions/<subscription-name>/$DeadLetterQueue`
 3. **Isolation in Topics**: Subscriptions operate independently. If Subscription B fails processing and dead-letters a message, it moves to Subscription B's DLQ only. Other subscriptions remain completely unaffected.
 4. **System Reservation**: You **cannot** manually create a queue or topic named `$DeadLetterQueue`. The `$DeadLetterQueue` path is a reserved system sub-entity path managed automatically by Azure Service Bus.
+5. This is a service that can be triggered by broker and client. Broker e.g. if limit is 7 times, it will auto move to DLQ. Client e.g. if client code explicitly dead-letter the message. NOTE: All other like deduplication, message_id, these are broker-controlled.
