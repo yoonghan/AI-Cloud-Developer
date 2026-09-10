@@ -112,6 +112,53 @@ await adminClient.CreateSubscriptionAsync(
 6. Note that MessageId must be set by the client, not by the Service Bus. If MessageId is not set, Service Bus will generate one, but it will not be unique.
 7. *Broker memory*: The deduplication table is stored in the broker's memory, and only at limit. If same message_id arrives at 21 seconds (if configured as 20seconds), same message_id are saved.
 
+## Partition
+1. Enable by `EnablePartitioning = true`, only during **Creation**.
+1. The overall throughput of the queue or topic is no longer bottlenecked by the performance of a single broker.
+2. Transaction are partition based, so you can't send transaction across different partitions. I.e., you can't use tx.send_message() to send a message to a different partition than the one the session is on.
+    - Mandatory Keys: Every message you send to a partitioned entity as part of a transaction must include a PartitionKey (or a SessionId, which acts as the partition key).
+4. How it partition, when partitioning is enabled, Azure Service Bus creates 16 internal messaging stores (partitions) behind the scenes. In order:
+    - **Explicit PartitionKey**: If you populate the PartitionKey property on a message, Service Bus hashes that key string to determine which of the 16 partitions will store it.
+    - **SessionId**: If no PartitionKey is set but a SessionId is present, Service Bus automatically uses the SessionId as the partition key. This guarantees that every message in a given session lands on the exact same physical partition for strict FIFO ordering.
+    - **MessageId** (with Duplicate Detection): If duplicate detection is enabled and neither PartitionKey nor SessionId is set, Service Bus hashes the MessageId so duplicate checks occur on the exact same partition memory store.
+    - **Round-Robin(Default)**: If no keys are specified, Service Bus uses a Round-Robin algorithm to distribute incoming messages evenly across all 16 partitions to maximize throughput.
+
+## Transaction
+1. Only code enabled
+```typescript
+import { ServiceBusClient } from "@azure/service-bus";
+
+const sbClient = new ServiceBusClient(connectionString);
+const sender = sbClient.createSender("target-queue");
+const receiver = sbClient.createReceiver("source-queue");
+
+// 1. Start a transaction
+const transaction = await sbClient.createTransaction();
+
+try {
+  // 2. Receive a message (must be in PeekLock mode)
+  const [message] = await receiver.receiveMessages(1);
+
+  if (message) {
+    // 3. Send a new message as part of the transaction
+    await sender.sendMessages({ body: "Processed result" }, { transaction });
+
+    // 4. Complete the original message within the same transaction
+    await receiver.completeMessage(message, { transaction });
+
+    // 5. Commit all operations atomically
+    await transaction.commit();
+  }
+} catch (error) {
+  // If anything fails, roll back all operations in the transaction
+  await transaction.rollback();
+}
+```
+2. Rules:
+    - **Same Namespace**: All queues and topics involved in a single transaction must reside within the same Service Bus namespace.
+    - **PartitionKey Constraint**: If the entities have partitioning enabled, every message sent within that transaction must share the exact same PartitionKey (or SessionId) so the broker can route them to the same underlying partition store.
+    - **PeekLock Required**: Transactional settlements (completing or dead-lettering messages) only work when receiving in PeekLock mode, as ReceiveAndDelete removes messages instantly upon receipt.
+
 ## Patterns
 1. **Claim-Check Pattern**: For large payloads exceeding tier limits, upload the payload to Azure Blob Storage and send only the blob SAS URI / reference metadata in the Service Bus message.
 2. **Time-to-Live (TTL)**: Expiration timer set on messages or entities. Expired messages are either deleted or automatically moved to the DLQ (`EnableDeadLetteringOnMessageExpiration = true`).
