@@ -7,6 +7,9 @@ az extension add --name containerapp # Container Apps
 az provider register --namespace Microsoft.App # Container Apps
 az provider register --namespace Microsoft.OperationalInsights # Log Analytics
 az provider register --namespace Microsoft.ContainerRegistry # ACR
+az provider register --namespace Microsoft.EventGrid # Event grid
+
+az extension add --name eventgrid --yes # Enable for Standard Tier namespace
 ```
 
 ## Authentication

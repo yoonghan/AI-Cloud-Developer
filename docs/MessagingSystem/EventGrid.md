@@ -10,7 +10,11 @@
     - Supports pull model.
     - Full MQTT (Message Queuing Telemetry Transport) protocol support.
     - Support namespace - a dedicated domain name (FQDN) and specific endpoints.
-
+    - Based on Throughput Unit(TU)/Capacity:
+        - Ingress (Incoming Traffic): Up to 1 MB per second or 1,000 events per second (whichever limit is hit first).
+        - Egress (Outgoing Traffic/Delivery): Up to 2 MB per second or 2,000 events per second.
+        - MQTT Device Connections: Up to 10,000 active device sessions simultaneously connected to the broker. 
+        
 ## Event Schema
 1. Event Grid has two types of event schemas: 
     - **Event Grid event schema**: 
@@ -106,4 +110,12 @@ az eventgrid event-subscription create \
 1. All or nothing.
 2. Specify with `--max-events-per-batch 100` and `--preferred-batch-size-in-kilobytes 512`.
 3. Max 1MB and 5000 events.
+
+## Locking
+1. There is a `lock_token` specific key to acknowledge or reject the event.
+2. `BrokerProperties` contains the lock token. Example: `detail.broker_properties.lock_token`.
+3. A lock token represents a claim on a message that has been delivered to a subscriber. While a subscriber holds a lock on a message, that message will not be delivered to other subscribers. The subscriber must either acknowledge or reject the message within the lock duration. If the lock expires, the message is made available for redelivery.
+4. The default lock duration is 60 seconds. You can configure the lock duration to be between 1 minute and 10 minutes.
+5. `delivery_count` is the number of delivery attempts before the event was dead-lettered. Example: `detail.broker_properties.delivery_count`.
+6. Coding wise like python tokens are used in array `consumer.acknowledge(lock_tokens=tokens)`.
     

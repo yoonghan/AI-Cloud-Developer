@@ -116,4 +116,4 @@
    - **Client Function (Starter)**: Triggers orchestrations from HTTP requests, timers, or queue events.
    - **Orchestrator Function**: Defines workflow logic in code (must be deterministic).
    - **Activity Function**: Executes individual steps/tasks (I/O, database access, API calls).
-   - *(Optional: Entity Functions for stateful actors)*.
+   - **Entity Functions**: Manages a small piece of durable state through explicit operations. Entities can help coordinate shared state, but an orchestrator and activities are sufficient for the document-processing scenario in this module.
