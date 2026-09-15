@@ -6,24 +6,27 @@
 1. Need to use UAMI (User Access Management Identity) for authentication with Azure resources. In this case you need to:
   - Create a UAMI in Azure Portal. Note its Client ID and Resource ID.
   - Example UAMI command:
+
   ```
   az identity create --name my-uami --resource-group my-resource-group --location my-location
   UAMI_CLIENT_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'clientId' -o tsv)
   UAMI_PRINCIPAL_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'principalId' -o tsv)
-
   ```
+
   - Not required to assign role to UAMI.
   - Then create a Service Account in the AKS cluster, using the UAMI's Client ID and Resource ID.
   - Example of Service Account:
+
   ```
   apiVersion: v1
-kind: ServiceAccount
-metadata:
-  annotations:
-    azure.workload.identity/client-id: <UAMI_CLIENT_ID>
-  name: azure-workload-identity
-  namespace: default
-```
+  kind: ServiceAccount
+  metadata:
+    annotations:
+      azure.workload.identity/client-id: <UAMI_CLIENT_ID>
+    name: azure-workload-identity
+    namespace: default
+  ```
+
   - Enable workload identity in AKS:
   ```
   az aks update \
@@ -31,39 +34,41 @@ metadata:
   --name myAKSCluster \
   --enable-workload-identity \
   --attach-acr <acr-name>
+  ```
 
   - Link the UAMI to the Service Account in AKS:
   ```
   AKS_OIDC_ISSUER=$(az aks show --resource-group <resource-group> --name <cluster-name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
 
-az identity federated-credential create \
-  --name <federated-identity-name> \
-  --identity-name <workload-identity-name> \
-  --resource-group <resource-group> \
-  --issuer "$AKS_OIDC_ISSUER" \
-  --subject "system:serviceaccount:<namespace>:<service-account-name>" \
-  --audiences "api://AzureADTokenExchange"
+  az identity federated-credential create \
+    --name <federated-identity-name> \
+    --identity-name <workload-identity-name> \
+    --resource-group <resource-group> \
+    --issuer "$AKS_OIDC_ISSUER" \
+    --subject "system:serviceaccount:<namespace>:<service-account-name>" \
+    --audiences "api://AzureADTokenExchange"
   ```
+
   - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
   - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
   - Bind pod with the service-account
   ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: study-buddy-api
-  namespace: ai-workloads
-spec:
-  replicas: 2
-  template:
-    metadata:
-      labels:
-        app: study-buddy
-        # 1. REQUIRED: Triggers the AKS webhook to inject the tokens
-        azure.workload.identity/use: "true" 
-    spec:
-      # 2. REQUIRED: Run as the ServiceAccount we annotated in Step 1
-      serviceAccountName: study-buddy-sa
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: study-buddy-api
+    namespace: ai-workloads
+  spec:
+    replicas: 2
+    template:
+      metadata:
+        labels:
+          app: study-buddy
+          # 1. REQUIRED: Triggers the AKS webhook to inject the tokens
+          azure.workload.identity/use: "true" 
+      spec:
+        # 2. REQUIRED: Run as the ServiceAccount we annotated in Step 1
+        serviceAccountName: study-buddy-sa
   ```
 2. System-assigned managed identity does not work as it does not have Client ID.
 3. Need to use workload identity for authentication with Azure resources.
