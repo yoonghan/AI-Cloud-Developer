@@ -52,6 +52,7 @@
   - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
   - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
   - Bind pod with the service-account
+  
   ```yaml
   apiVersion: apps/v1
   kind: Deployment
@@ -74,7 +75,7 @@
 3. Need to use workload identity for authentication with Azure resources.
 4. Service Principal (Client ID + Client Secret) do work, but is not recommended, it can be exposed.
 5. For repository, it needs to be specified in Kubernetes.
-```
+```bash
 kubectl create secret docker-registry ghcr-secret \
   --namespace $NAMESPACE \
   --docker-server=ghcr.io \
