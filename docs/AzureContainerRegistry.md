@@ -84,4 +84,4 @@ az acr task create \
 
 ## Security
 1. Enable Microsoft Defender for Containers at the subscription level to automatically trigger vulnerability scans upon image push.
-2. Use private endpoint for ACR to prevent public access. Requires premium tier.
+2. Use private endpoint for ACR to prevent public access. Requires premium tier. Pull from private use `properties.vnetImagePullEnabled`, `az resource update --resource-group <group-name> --name <app-name> --resource-type "Microsoft.Web/sites" --set properties.vnetImagePullEnabled [true|false]`. See [link](https://learn.microsoft.com/en-us/azure/app-service/configure-custom-container?tabs=debian&pivots=container-linux)
