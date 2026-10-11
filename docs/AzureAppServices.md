@@ -3,6 +3,7 @@
 ## Plan
 1. App Service plans determine the location, scale, and features available for the web app.
 2. Dedicated Plans (Basic, Standard, Premium): You select a VM size and pay a fixed hourly rate for that server to be powered on 24/7. You are billed the same amount whether 10,000 users visit your site or zero.
+3. WebApp = App Service.
 
 ## Configuration 
 
@@ -81,3 +82,22 @@ Kudu is a service for deploying and managing web applications.
 | AppServiceAppLogs | Application-level logs (when configured) |
 
 2. SSH, but image must have SSH support, `RUN apt-get update && apt-get install -y openssh-server`
+
+## Pricing Tier
+
+| Tier | Description |
+| --- | --- |
+| **Free** | Limited features and performance. These tiers are intended to be used for development and testing purposes only. No SLA is provided for the Free and Shared service plans. |
+| **Shared** | Shared resources with other apps. Same as Free, no SLA. |
+| **Basic** | Dedicated resources with basic features.  Built-in network load-balancing support automatically distributes traffic across instances. The Basic service plan with Linux runtime environments supports Web App for Containers.|
+| **Standard** | Dedicated resources with advanced features. The Standard service plan with Linux runtime environments supports Web App for Containers. Built-in network load-balancing support automatically distributes traffic across instances. |
+| **Premium** | High-performance dedicated resources with advanced features. Offering Dav4 and Ddv4-series virtual machines and SSD storage. |
+| **Isolated** | Dedicated resources in a private network with advanced features. IsolatedV2 is the preferred tier offering newer hardware, up to 200 instances, private environments, and enhanced security. |
+
+| Feature | Free F1 | Basic B1 | Standard S1 | Premium P1V3 | Isolated V2 |
+| --- | --- | --- | --- | --- | --- |
+| Usage | Development, Testing | Development, Testing | Production workloads | Enhanced scale, performance | Network-isolated workloads |
+| Staging slots | N/A | N/A | 5 | 20 | 20 |
+| Auto scale | N/A | Manual | Rules | Rules, Elastic | Rules |
+| Scale instances | N/A | 3 | 10 | 30 | 200 |
+| Daily backups | N/A | N/A | 10 | 50 | 50 |
