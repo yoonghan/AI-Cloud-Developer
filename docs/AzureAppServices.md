@@ -101,3 +101,12 @@ Kudu is a service for deploying and managing web applications.
 | Auto scale | N/A | Manual | Rules | Rules, Elastic | Rules |
 | Scale instances | N/A | 3 | 10 | 30 | 200 |
 | Daily backups | N/A | N/A | 10 | 50 | 50 |
+
+## Logging and Logging Types
+1. **Application Logs**: These capture the messages generated directly by your application's code (e.g., using ILogger in .NET or console.log in Node.js). You use these to debug the internal logic of your app. 
+    - **File System**: logging is designed exclusively for short-term, temporary debugging and automatically turns itself off after 12 hours. To reliably store application logs for any meaningful period, you must route them to a Blob container.
+    - **Blob Storage**: Blob storage is a durable and scalable storage solution for long-term log retention.logs are stored in the Blob storage account as .txt files and can be downloaded or analyzed using various tools.
+2. **Web Server Logs**: These record raw HTTP request data handled by the server infrastructure. They contain details like the client IP address, requested URL, and the HTTP status code returned. This is useful for analyzing overall traffic or verifying if a request successfully reached the server. 
+3. **Detailed Error Messages**: This saves a copy of the HTML error page generated when a request fails with an HTTP status code of 400 or higher. It helps you see exactly what the server attempted to return to the client. 
+4. **Failed Request Tracing**: This provides an extremely detailed, step-by-step trace of how the underlying IIS components processed a specific request. It is typically used for diagnosing complex performance bottlenecks or obscure server-level routing issues. 
+5. **Deployment Logs**: These track the automated steps that occur when you publish your application (such as via Git or a CI/CD pipeline). You check these if your application code fails to deploy correctly. 
