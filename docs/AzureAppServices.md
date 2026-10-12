@@ -110,3 +110,7 @@ Kudu is a service for deploying and managing web applications.
 3. **Detailed Error Messages**: This saves a copy of the HTML error page generated when a request fails with an HTTP status code of 400 or higher. It helps you see exactly what the server attempted to return to the client. 
 4. **Failed Request Tracing**: This provides an extremely detailed, step-by-step trace of how the underlying IIS components processed a specific request. It is typically used for diagnosing complex performance bottlenecks or obscure server-level routing issues. 
 5. **Deployment Logs**: These track the automated steps that occur when you publish your application (such as via Git or a CI/CD pipeline). You check these if your application code fails to deploy correctly. 
+
+## Web Jobs
+1. Run in container and none
+2. [link](https://learn.microsoft.com/en-us/azure/app-service/overview-webjobs)

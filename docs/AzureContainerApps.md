@@ -224,3 +224,19 @@ az containerapp job create \
 5. Remember you cannot scale specific revision! You need redeployment, hence only the latest version is scaled; and you need to update the traffic control.
 
 ![ACA Scale Rules](img/aca-scale-rules.png)
+
+## Restrictions
+1. Subnet must be dedicated!
+2. Exclusive use: Just like ACI, this subnet cannot contain any other resources. Not even a VM in that subnet.
+3. No Service Endpoints: Because the subnet is completely managed by the ACA infrastructure, you generally cannot attach standard service endpoints to the ACA subnet. If your container apps need secure access to Azure PaaS services (like Storage or Key Vault), you must use Private Endpoints instead of Service Endpoints.
+4. Example, only Subnet 3 is correct!
+```
+You have Azure subscription that includes virtual network with following subnets:
+
+Subnet1, which has connected virtual machine
+Subnet2, which has connected app service web app
+Subnet3, which has deployed container instance
+You plan to deploy container instance named container1.
+
+To which subnets can you deploy container1?
+```
