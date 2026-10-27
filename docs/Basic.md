@@ -22,6 +22,12 @@ az extension add --name eventgrid --yes # Enable for Standard Tier namespace
 - AzureDeveloperCliCredential: Authenticates using the account from azd auth login.
 - AzurePowerShellCredential: Authenticates using the account from Connect-AzAccount.
 
+## Azure Files
+1. Container App/Container Instances or Kubernetes can connect to Azure File directly. Because Azure Files operates as a managed SMB file share, it allows multiple containers within the exact same container group to mount the volume and read/write to the persistent storage simultaneously.
+2. Containers (ACI, ACA) defaults has 10GB and ephermeral. It's simply a local disk space sliced out of the underlying host Virtual Machine that Microsoft is using to run your container.
+3. AKS uses a seamless automation process called Dynamic Provisioning using CSI (Container Storage Interface) drivers to create storage. Need to request via PersistentVolumeClaim (PVC). In this file, you simply state what you need: "I need 50GB of storage, and I want it to use the azurefile-csi (Azure Files) or managed-csi (Azure Disks) Storage Class."
+4. At the operating system level, mounting an SMB network drive in ACA or ACI currently requires the raw Storage Account Key for authentication. You pass the Storage Account Name, Storage Account Key, and File Share Name directly into this volume definition file. ACA has a specialty.
+
 ## Sovereign Cloud
 To authenticate with a resource in a Sovereign Cloud, you will need to set the audience in the AppConfigurationClient constructor options.
 
