@@ -4,8 +4,8 @@
 
 ## Authentication to talk with other resources.
 1. Need to use UAMI (User Access Management Identity) for authentication with Azure resources. In this case you need to:
-  - Create a UAMI in Azure Portal. Note its Client ID and Resource ID.
-  - Example UAMI command:
+    - Create a UAMI in Azure Portal. Note its Client ID and Resource ID.
+    - Example UAMI command:
 
   ```
   az identity create --name my-uami --resource-group my-resource-group --location my-location
@@ -13,9 +13,9 @@
   UAMI_PRINCIPAL_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'principalId' -o tsv)
   ```
 
-  - Not required to assign role to UAMI.
-  - Then create a Service Account in the AKS cluster, using the UAMI's Client ID and Resource ID.
-  - Example of Service Account:
+    - Not required to assign role to UAMI.
+    - Then create a Service Account in the AKS cluster, using the UAMI's Client ID and Resource ID.
+    - Example of Service Account:
 
   ```
   apiVersion: v1
@@ -27,16 +27,16 @@
     namespace: default
   ```
 
-  - Enable workload identity in AKS:
+    - Enable workload identity in AKS:
   ```
   az aks update \
-  --resource-group myResourceGroup \
-  --name myAKSCluster \
-  --enable-workload-identity \
-  --attach-acr <acr-name>
+    --resource-group myResourceGroup \
+    --name myAKSCluster \
+    --enable-workload-identity \
+    --attach-acr <acr-name>
   ```
 
-  - Link the UAMI to the Service Account in AKS:
+    - Link the UAMI to the Service Account in AKS:
   ```
   AKS_OIDC_ISSUER=$(az aks show --resource-group <resource-group> --name <cluster-name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
 
@@ -49,9 +49,9 @@
     --audiences "api://AzureADTokenExchange"
   ```
 
-  - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
-  - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
-  - Bind pod with the service-account
+    - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
+    - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
+    - Bind pod with the service-account
   
   ```yaml
   apiVersion: apps/v1
@@ -77,12 +77,12 @@
 5. For repository, it needs to be specified in Kubernetes.
 ```bash
 kubectl create secret docker-registry ghcr-secret \
-  --namespace $NAMESPACE \
-  --docker-server=ghcr.io \
-  --docker-username=$GHCR_USERNAME \
-  --docker-password=$GHCR_PASSWORD \
-  --docker-email="noreply@example.com" \
-  --dry-run=client -o yaml | kubectl apply -f -
+    --namespace $NAMESPACE \
+    --docker-server=ghcr.io \
+    --docker-username=$GHCR_USERNAME \
+    --docker-password=$GHCR_PASSWORD \
+    --docker-email="noreply@example.com" \
+    --dry-run=client -o yaml | kubectl apply -f -
 
 #or 
 az aks update --resource-group rg --name myAKS --attach-acr myacr
@@ -173,7 +173,7 @@ volumes:
 containers:
 - name: api
   volumeMounts:
-  - name: config-volume
+    - name: config-volume
     mountPath: /app/config
     readOnly: true
 ```
@@ -223,7 +223,7 @@ spec:
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:
-  - type: azure-queue
+    - type: azure-queue
     metadata:
       queueName: ai-tasks
       queueLength: "10"
@@ -244,12 +244,12 @@ spec:
 4. But this is only a part, you also need to add authentication to KEDA in the federated credentials.
 ```bash
 az identity federated-credential create \
-  --name "keda-queue-scaler-auth" \
-  --identity-name "my-uami-name" \
-  --resource-group "my-rg" \
-  --issuer "<AKS-OIDC-ISSUER-URL>" \
-  --subject "system:serviceaccount:keda:keda-operator" \
-  --audience "api://AzureADTokenExchange"
+    --name "keda-queue-scaler-auth" \
+    --identity-name "my-uami-name" \
+    --resource-group "my-rg" \
+    --issuer "<AKS-OIDC-ISSUER-URL>" \
+    --subject "system:serviceaccount:keda:keda-operator" \
+    --audience "api://AzureADTokenExchange"
 ```
 
 
@@ -270,31 +270,31 @@ If a Service has no EndpointSlices, your AI API can't receive traffic even if po
 
 ## Need to read
 1) AKS security & best practices (Microsoft)
-  - https://learn.microsoft.com/azure/aks/security-best-practices
-  - https://learn.microsoft.com/azure/aks/use-azure-policy
+    - https://learn.microsoft.com/azure/aks/security-best-practices
+    - https://learn.microsoft.com/azure/aks/use-azure-policy
 2) AKS and Azure networking
-  - Azure CNI & networking for AKS: https://learn.microsoft.com/azure/aks/configure-azure-cni
-  - Azure Firewall overview: https://learn.microsoft.com/azure/firewall/overview
-  - Azure NAT Gateway: https://learn.microsoft.com/azure/virtual-network/nat-gateway/nat-overview
+    - Azure CNI & networking for AKS: https://learn.microsoft.com/azure/aks/configure-azure-cni
+    - Azure Firewall overview: https://learn.microsoft.com/azure/firewall/overview
+    - Azure NAT Gateway: https://learn.microsoft.com/azure/virtual-network/nat-gateway/nat-overview
 3) Core Kubernetes primitives (official k8s docs)
-  - Namespaces: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
-  - RBAC: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
-  - ResourceQuota: https://kubernetes.io/docs/concepts/policy/resource-quotas/
-  - LimitRange: https://kubernetes.io/docs/concepts/policy/limit-range/
-  - NetworkPolicy: https://kubernetes.io/docs/concepts/services-networking/network-policies/
-  - Taints & Tolerations: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
-  - Pod Security Admission & Pod Security Standards: https://kubernetes.io/docs/concepts/security/pod-security-admission/ and https://kubernetes.io/docs/concepts/security/pod-security-standards/
+    - Namespaces: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+    - RBAC: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+    - ResourceQuota: https://kubernetes.io/docs/concepts/policy/resource-quotas/
+    - LimitRange: https://kubernetes.io/docs/concepts/policy/limit-range/
+    - NetworkPolicy: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+    - Taints & Tolerations: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+    - Pod Security Admission & Pod Security Standards: https://kubernetes.io/docs/concepts/security/pod-security-admission/ and https://kubernetes.io/docs/concepts/security/pod-security-standards/
 4) Network plugin / egress controls
-  - Project Calico (network policies & egress support): https://docs.projectcalico.org/
+    - Project Calico (network policies & egress support): https://docs.projectcalico.org/
 5) Admission/Policy engines (enforcement)
-  - Azure Policy + Gatekeeper for AKS: https://learn.microsoft.com/azure/aks/gatekeeper-overview and https://learn.microsoft.com/azure/aks/use-azure-policy
-  - Open Policy Agent Gatekeeper: https://open-policy-agent.github.io/gatekeeper/ (policy examples)
-  - Kyverno (policy engine that many teams prefer for Kubernetes-native policies): https://kyverno.io/
+    - Azure Policy + Gatekeeper for AKS: https://learn.microsoft.com/azure/aks/gatekeeper-overview and https://learn.microsoft.com/azure/aks/use-azure-policy
+    - Open Policy Agent Gatekeeper: https://open-policy-agent.github.io/gatekeeper/ (policy examples)
+    - Kyverno (policy engine that many teams prefer for Kubernetes-native policies): https://kyverno.io/
 6) Image registry / ACR guidance
-  - Azure Container Registry docs: https://learn.microsoft.com/azure/container-registry/
-  - Enforce allowed registries via admission controllers (Gatekeeper/Kyverno policy examples) — see Kyverno/Gatekeeper examples pages.
+    - Azure Container Registry docs: https://learn.microsoft.com/azure/container-registry/
+    - Enforce allowed registries via admission controllers (Gatekeeper/Kyverno policy examples) — see Kyverno/Gatekeeper examples pages.
 7) Security Policy
-  - https://learn.microsoft.com/en-us/azure/aks/network-policy-best-practices
+    - https://learn.microsoft.com/en-us/azure/aks/network-policy-best-practices
 
 ## Thoughts
 Sure! The way Kubernetes handles network traffic can be a bit confusing at first because it uses a layered approach.

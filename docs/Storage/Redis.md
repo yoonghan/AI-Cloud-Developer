@@ -174,15 +174,15 @@ XADD (Created) -> XREADGROUP (Worker 1 reads, enters PEL) -> Worker 1 crashes wi
 
 
 1. The "Polling" Problem (RPOP/LPOP/LRANGE/LPUSH/RPUSH/LLEN)
-  - If you use the standard RPOP/LPOP command for a job queue, your background worker has to constantly ask Redis, "Are there any new jobs?"
-  - If you check every 1 second and the queue is empty, you are making thousands of useless network calls a day.
-  - This constant "polling" wastes CPU cycles, consumes network bandwidth, and adds unnecessary load to the database engine.
+    - If you use the standard RPOP/LPOP command for a job queue, your background worker has to constantly ask Redis, "Are there any new jobs?"
+    - If you check every 1 second and the queue is empty, you are making thousands of useless network calls a day.
+    - This constant "polling" wastes CPU cycles, consumes network bandwidth, and adds unnecessary load to the database engine.
 
 2. The Solution: BRPOP (Blocking Right Pop)
-  - BRPOP solves this inefficiency by putting your connection to sleep.
-  - How it works: When your worker executes BRPOP, if the list is empty, Redis intentionally holds the connection open and puts the worker in a waiting state.
-  - Instant Wake-Up: The exact millisecond a producer drops a new job into the list using LPUSH, Redis instantly wakes the sleeping worker and hands it the data.
-  - Timeouts: It accepts a timeout parameter (e.g., blocking for 5 seconds before waking up to report null, or 0 to block infinitely until a job arrives).
+    - BRPOP solves this inefficiency by putting your connection to sleep.
+    - How it works: When your worker executes BRPOP, if the list is empty, Redis intentionally holds the connection open and puts the worker in a waiting state.
+    - Instant Wake-Up: The exact millisecond a producer drops a new job into the list using LPUSH, Redis instantly wakes the sleeping worker and hands it the data.
+    - Timeouts: It accepts a timeout parameter (e.g., blocking for 5 seconds before waking up to report null, or 0 to block infinitely until a job arrives).
 
 ## Pipeline vs Transaction
 Pipeline improves performance. But using pipe will not guarantee atomicity. i.e., server crash between two commands in the pipeline will leave partial commands processed. Use Transaction to guarantee atomicity. But use pipeline to improve the performance.

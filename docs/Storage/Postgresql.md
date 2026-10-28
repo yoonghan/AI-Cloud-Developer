@@ -382,8 +382,8 @@ IVFFlat (Inverted File Flat) divides vector space into $K$ cluster regions (Voro
 - lists (Build-time parameter): Specifies the total number of cluster buckets created when the index is built.
 - For 100,000 records, lists = 100 means PostgreSQL clusters the data into 100 distinct buckets (~1,000 vectors per bucket).
 - Recommended Formula for lists:
-  - Tables up to 1 million rows: lists = rows / 1000 (e.g., 100,000 rows → lists = 100)
-  - Tables over 1 million rows: lists = sqrt(rows) (e.g., 1,000,000 rows → lists = 1000)
+    - Tables up to 1 million rows: lists = rows / 1000 (e.g., 100,000 rows → lists = 100)
+    - Tables over 1 million rows: lists = sqrt(rows) (e.g., 1,000,000 rows → lists = 1000)
 - Query-Time Companion: ivfflat.probes
     - lists controls how many buckets are created.
     - At query time, ivfflat.probes (default = 1) controls how many of those buckets PostgreSQL searches inside.
@@ -399,15 +399,15 @@ Layer 1 (Local)      [Node A] ------> [Node F] ------------> [Node Z]
 Layer 0 (Base Data)  [Node A] -> [B] -> [F] -> [G] -> [K] -> [Node Z]
 
 - m (Max Connections Per Node)
-  - What it means: The maximum number of outgoing bi-directional links (edges) connected to each node in the graph layers.
-  - Default: m = 16.
-  - Impact:
+    - What it means: The maximum number of outgoing bi-directional links (edges) connected to each node in the graph layers.
+    - Default: m = 16.
+    - Impact:
     - Higher m (e.g., 32 or 64): Stronger graph connectivity, higher search recall/accuracy for complex high-dimensional vectors, but uses more RAM and takes longer to build/update.
     - Lower m (e.g., 8 or 16): Smaller index size on disk/RAM, faster inserts/updates.
 - ef_construction (Search Depth During Index Building)
-  - What it means: The size of the dynamic candidate list evaluated when inserting a new vector into the graph during index creation.
-  - Default: ef_construction = 64.
-  - Impact:
+    - What it means: The size of the dynamic candidate list evaluated when inserting a new vector into the graph during index creation.
+    - Default: ef_construction = 64.
+    - Impact:
     - Higher ef_construction (e.g., 128 or 256): Produces a higher quality graph topology with optimal connections, leading to higher search accuracy at query time, but index creation time increases.
     - Lower ef_construction (e.g., 32): Faster index creation, but graph quality and query recall may be lower.
 - Query-Time Companion: hnsw.ef_search

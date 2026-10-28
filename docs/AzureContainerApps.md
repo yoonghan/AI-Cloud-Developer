@@ -29,9 +29,9 @@ az containerapp up \
 1. Use Digest instead of tag for container images if you want to ensure specific version. I.e. `myregistry.azurecr.io/myapp@sha256:<digest>`. Updating is:
 ```
 az containerapp update \
-  --name <app-name> \
-  --resource-group <resource-group> \
-  --image <registry>/<repo>@sha256:<digest>
+    --name <app-name> \
+    --resource-group <resource-group> \
+    --image <registry>/<repo>@sha256:<digest>
 ```
 2. You can deactivate a revision `az containerapp revision deactivate`. This option is useful when you want to rollback to the previous version.
 3. Feature of auto pull from registry `--enable-cd true`. Take note using `latest` image tag does not pull latest and requires restart.
@@ -43,10 +43,10 @@ az containerapp update \
 
 ## Image pull behavior
 1. Understanding when App Service pulls images helps you plan for deployment scenarios and troubleshoot issues.
-  - Initial deployment: App Service pulls all image layers when you first deploy the container or change the image reference.
-  - App restart: On restart, **App Service checks for changes and pulls only modified layers**. If the image is unchanged, the cached layers are used.
-  - Scale out: When App Service adds new instances, each instance pulls the image. New instances might need to pull the full image if layers aren't cached on the underlying infrastructure.
-  - Pricing tier changes: Moving to a different pricing tier might allocate new infrastructure, which pulls the image fresh and can affect startup time.
+    - Initial deployment: App Service pulls all image layers when you first deploy the container or change the image reference.
+    - App restart: On restart, **App Service checks for changes and pulls only modified layers**. If the image is unchanged, the cached layers are used.
+    - Scale out: When App Service adds new instances, each instance pulls the image. New instances might need to pull the full image if layers aren't cached on the underlying infrastructure.
+    - Pricing tier changes: Moving to a different pricing tier might allocate new infrastructure, which pulls the image fresh and can affect startup time.
 
 
 ## Ingress
@@ -82,10 +82,10 @@ az containerapp update \
 
 ```bash
 az containerapp revision label add \
-  --name <CONTAINER_APP_NAME> \
-  --resource-group <RESOURCE_GROUP_NAME> \
-  --revision <REVISION_NAME> \
-  --label <LABEL_NAME>
+    --name <CONTAINER_APP_NAME> \
+    --resource-group <RESOURCE_GROUP_NAME> \
+    --revision <REVISION_NAME> \
+    --label <LABEL_NAME>
 ```
 
 ## Environment Variables
@@ -136,14 +136,14 @@ az containerapp revision label add \
 1. Rule: Always have Memory request 2x of CPU request.
 ```bash
 az containerapp create \
-  --name order-api \
-  --resource-group rg-ecommerce \
-  --environment my-environment \
-  --image myregistry.azurecr.io/order-api:v1 \
-  --cpu 0.5 \
-  --memory 1.0Gi \
-  --min-replicas 2 \
-  --max-replicas 20
+    --name order-api \
+    --resource-group rg-ecommerce \
+    --environment my-environment \
+    --image myregistry.azurecr.io/order-api:v1 \
+    --cpu 0.5 \
+    --memory 1.0Gi \
+    --min-replicas 2 \
+    --max-replicas 20
 ```
 2. There is a **Dedicated** vs **Pay-as-you-go** pricing model.
 3. **Dedicated** - you reserve the capacity, hence you pay for the capacity even if not in use. You can choose: 
@@ -156,64 +156,64 @@ az containerapp create \
 ### Scaling Rules 
 1. Works via KEDA - Kubernetes Event-driven Autoscaling.
 2. Rules:
-  - HTTP Scaling - concurrent requests per container. [IMPORTANT] Jobs cannot be triggered via HTTP, use cron or events.
-  - CPU/Memory Scaling - based on cpu/memory utilization percentage
-  - KEDA Scaling - External Scaling
-  - Azure Service Bus Scaling - topic name + queue name + queue length
-  - Azure Queue Scaling - queue name + queue length
-  - Cron job Scaling - based on cron expression
-  - Kafka Scaling - topic name + partition count
-  - Redis Scaling - Redis length
-  - RabbitMQ Scaling - queue length
-  - Redis Stream Scaling - Redis length
+    - HTTP Scaling - concurrent requests per container. [IMPORTANT] Jobs cannot be triggered via HTTP, use cron or events.
+    - CPU/Memory Scaling - based on cpu/memory utilization percentage
+    - KEDA Scaling - External Scaling
+    - Azure Service Bus Scaling - topic name + queue name + queue length
+    - Azure Queue Scaling - queue name + queue length
+    - Cron job Scaling - based on cron expression
+    - Kafka Scaling - topic name + partition count
+    - Redis Scaling - Redis length
+    - RabbitMQ Scaling - queue length
+    - Redis Stream Scaling - Redis length
 2. Can use Managed identity.
 3. Properties to be aware of:
-  - --scale-rule-auth "connection=my-queue-connection-string-secret" = method to use connection string to queue or event bus
-  - --scale-rule-identity = preferred way
+    - --scale-rule-auth "connection=my-queue-connection-string-secret" = method to use connection string to queue or event bus
+    - --scale-rule-identity = preferred way
   ```bash
   az containerapp job create \
-  --name "my-event-job" \
-  --resource-group "my-rg" \
-  --environment "my-environment" \
-  --image "myregistry.azurecr.io/processor:v1" \
-  --trigger-type "Event" \
-  --replica-timeout 600 \
-  --polling-interval 30 \
-  --min-executions 0 \
-  --max-executions 10 \
-  --scale-rule-name "queue-trigger" \
-  --scale-rule-type "azure-queue" \
-  --scale-rule-metadata "accountName=mystorageaccount" "queueName=tasks" "queueLength=1" \
-  --scale-rule-auth "connection=storage-connection-secret"
+    --name "my-event-job" \
+    --resource-group "my-rg" \
+    --environment "my-environment" \
+    --image "myregistry.azurecr.io/processor:v1" \
+    --trigger-type "Event" \
+    --replica-timeout 600 \
+    --polling-interval 30 \
+    --min-executions 0 \
+    --max-executions 10 \
+    --scale-rule-name "queue-trigger" \
+    --scale-rule-type "azure-queue" \
+    --scale-rule-metadata "accountName=mystorageaccount" "queueName=tasks" "queueLength=1" \
+    --scale-rule-auth "connection=storage-connection-secret"
   ```
-  - `min-replicas` and `max-replicas` default to 1.
+    - `min-replicas` and `max-replicas` default to 1.
 4. Can use yaml.
 5. To see replicas use `az containerapp replica list -n N -g G`.
 6. To see specific replica logs
 ```
 az containerapp logs show \
-  --name <APP_NAME> \
-  --resource-group <RESOURCE_GROUP> \
-  --revision <REVISION_NAME> \
-  --replica <REPLICA_NAME> \
-  --container <CONTAINER_NAME> \
-  --type console \
-  --tail 50 \
-  --follow true
+    --name <APP_NAME> \
+    --resource-group <RESOURCE_GROUP> \
+    --revision <REVISION_NAME> \
+    --replica <REPLICA_NAME> \
+    --container <CONTAINER_NAME> \
+    --type console \
+    --tail 50 \
+    --follow true
 ```
 7. [link](https://learn.microsoft.com/en-us/training/modules/scale-containers-azure-container-apps/4-keda-scalers-custom-workloads?pivots=text)
 8. You can create jobs with
 ```
 az containerapp job create \
-  --name "daily-five-pm-job" \
-  --resource-group "MyResourceGroup" \
-  --environment "MyContainerAppEnv" \
-  --trigger-type "Cron" \
-  --cron-expression "0 17 * * *" \
-  --replica-timeout 1800 \
-  --replica-retry-limit 1 \
-  --image "myregistry.azurecr.io/my-task-image:latest" \
-  --cpu "0.5" --memory "1.0Gi"
+    --name "daily-five-pm-job" \
+    --resource-group "MyResourceGroup" \
+    --environment "MyContainerAppEnv" \
+    --trigger-type "Cron" \
+    --cron-expression "0 17 * * *" \
+    --replica-timeout 1800 \
+    --replica-retry-limit 1 \
+    --image "myregistry.azurecr.io/my-task-image:latest" \
+    --cpu "0.5" --memory "1.0Gi"
   ```
 
 ### Traffic Management

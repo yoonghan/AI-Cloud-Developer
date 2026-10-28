@@ -25,8 +25,8 @@ theme:
     - search.suggest
 
 nav:
-  - Home: index.md
-  - Topics:
+    - Home: index.md
+    - Topics:
     - Basic.md
     - AzureContainerRegistry.md
     - AzureAppServices.md
@@ -35,30 +35,30 @@ nav:
     - AzureKubernetes.md
     - AzureFoundry.md
     - AzureFunctions.md
-  - Storage:
+    - Storage:
     - Storage/CosmosDb.md
     - Storage/Postgresql.md
     - Storage/Redis.md
-  - Configuration:
+    - Configuration:
     - Configuration/AppConfiguration.md
     - Configuration/KeyVault.md
-  - Monitoring:
+    - Monitoring:
     - Monitoring/Telemetry.md
     - Monitoring/Monitor.md
-  - MessagingSystem:
+    - MessagingSystem:
     - MessagingSystem/EventGrid.md
     - MessagingSystem/EventHub.md
     - MessagingSystem/ServiceBus.md
-  - General:
+    - General:
     - General/ArtificialIntelligence.md
     - General/AzureConative.md
-  - Exam: 
+    - Exam: 
     - Exam_Preparation/Notes.md
     - Exam_Preparation/Labs.md
 markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.superfences:
+    - admonition
+    - pymdownx.details
+    - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid

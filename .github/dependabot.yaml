@@ -5,7 +5,7 @@
 
 version: 1
 updates:
-  - package-ecosystem: "github-actions"
+    - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"

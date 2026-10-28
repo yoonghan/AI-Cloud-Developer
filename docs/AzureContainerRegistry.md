@@ -33,11 +33,11 @@
 
 ```bash
 az acr task create \
-  --registry myregistry \
-  --name build-test-push \
-  --context https://github.com/myorg/inference-api.git \
-  --file acr-task.yaml \
-  --git-access-token $PAT
+    --registry myregistry \
+    --name build-test-push \
+    --context https://github.com/myorg/inference-api.git \
+    --file acr-task.yaml \
+    --git-access-token $PAT
 
 ## acr-task.yaml
 # version: v1.1.0
@@ -59,9 +59,9 @@ az acr task create \
 5. Lock enabled to prevent **overrides** and accidental **deletions**.
 ```bash
 az acr repository update \
-  --name myregistry \
-  --image inference-api:v1.2.0 \
-  --write-enabled false
+    --name myregistry \
+    --image inference-api:v1.2.0 \
+    --write-enabled false
 ```
 
 ## Purging
@@ -69,17 +69,17 @@ az acr repository update \
 2. ACR purge
 ```bash
 az acr run --registry myregistry \
-  --cmd "acr purge --filter 'inference-api:.*' --untagged --ago 30d" \
+    --cmd "acr purge --filter 'inference-api:.*' --untagged --ago 30d" \
   /dev/null
 
 #   or
 
 az acr task create \
-  --registry myregistry \
-  --name cleanup-untagged \
-  --cmd "acr purge --filter '.*:.*' --untagged --ago 7d" \
-  --schedule "0 0 * * 0" \
-  --context /dev/null
+    --registry myregistry \
+    --name cleanup-untagged \
+    --cmd "acr purge --filter '.*:.*' --untagged --ago 7d" \
+    --schedule "0 0 * * 0" \
+    --context /dev/null
 ```
 
 ## Security

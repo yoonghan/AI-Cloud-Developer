@@ -82,20 +82,20 @@ this.settings = await load(endpoint, new DefaultAzureCredential(), {
 
 ```bash
 az appconfig kv import \
-  --name <your-app-config-name> \
-  --source appconfig \
-  --src-name <your-app-config-name> \
-  --src-snapshot <your-snapshot-name> \
-  --yes
+    --name <your-app-config-name> \
+    --source appconfig \
+    --src-name <your-app-config-name> \
+    --src-snapshot <your-snapshot-name> \
+    --yes
 ```
 
 ## Lock
 1. You can lock with. NOTE if using command `--yes` mean force.
 ```
 az appconfig kv lock \
-  --name walcronconfig \
-  --key openai:domain \
-  --yes
+    --name walcronconfig \
+    --key openai:domain \
+    --yes
 ```
 
 ## Feature flag
