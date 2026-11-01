@@ -252,7 +252,6 @@ az identity federated-credential create \
     --audience "api://AzureADTokenExchange"
 ```
 
-
 ## Troubleshooting
 1. Inspect Services using kubectl
 You can use kubectl commands to examine Services in detail:
@@ -268,11 +267,26 @@ Ports and targetPorts that should align with container ports
 EndpointSlices that list the actual pod IPs that receive traffic
 If a Service has no EndpointSlices, your AI API can't receive traffic even if pods are healthy. Resolving label mismatches or port configuration restores connectivity.
 
+## Azure Container Interface (CNI)
+1. Kubernetes uses Container Networking Interface (CNI) plugins to manage networking in Kubernetes clusters. CNI plugins handle assigning IP addresses to pods, routing network traffic between pods, routing Kubernetes service traffic, and more.
+2. Azure CNI plugin assigns each pod a virtual network IP address from the subnet, which enables AKS pods to communicate directly with other resources in your Azure virtual network.
+3. CNI with AKS - choose correct mode
+    - Azure CNI: Requires an address space that has enough unreserved IP addresses for all pods across all nodes.
+![Container Network Interface](img/cni.png)
+
+### Question
+1. You must deploy an AKS cluster so the Kubernetes API server is accessible only from inside your virtual network (no public endpoint), while cluster nodes still need outbound access to pull container images. Which configuration should you choose?
+    - A) Create a standard AKS cluster and restrict access with an Azure Firewall rule.
+    - B) Enable an AKS private cluster so the API server has a private endpoint in the VNet. **ANSWER**
+    - C) Deploy the API server behind an Azure Application Gateway and disable the public endpoint.
+    - D) Use Azure CNI with kubenet to remove the API server public endpoint.
+
+
 ## Need to read
 1) AKS security & best practices (Microsoft)
     - https://learn.microsoft.com/azure/aks/security-best-practices
     - https://learn.microsoft.com/azure/aks/use-azure-policy
-2) AKS and Azure networking
+2) AKS and Azure networking (Azure Container Interface)
     - Azure CNI & networking for AKS: https://learn.microsoft.com/azure/aks/configure-azure-cni
     - Azure Firewall overview: https://learn.microsoft.com/azure/firewall/overview
     - Azure NAT Gateway: https://learn.microsoft.com/azure/virtual-network/nat-gateway/nat-overview
@@ -301,19 +315,19 @@ Sure! The way Kubernetes handles network traffic can be a bit confusing at first
 
 Here is the breakdown of Service vs Ingress vs VirtualService, and why the plan uses an Ingress.
 
-1. Kubernetes Service (Layer 4)
+### Kubernetes Service (Layer 4)
 A Service is a core Kubernetes concept used to group your pods together under a single IP address.
 
 ClusterIP (Internal): By default, a Service is internal. It allows App A to talk to App B inside the cluster. (This is what is defined in the service-ingress.yaml artifact).
 LoadBalancer (External): You can expose your app directly to the internet by changing the Service type to LoadBalancer. When you do this, AKS talks to Azure to automatically provision a public Azure Standard Load Balancer.
 The Catch: A Load Balancer operates at Layer 4 (TCP/UDP). It does not understand HTTP. It cannot do URL-based routing (e.g., send /api to one pod and /web to another), it cannot easily handle CORS, and it cannot terminate SSL/HTTPS certificates effectively. Also, if you have 10 apps, you will pay for 10 Public IP addresses.
-2. Kubernetes Ingress (Layer 7) - The Recommended Approach
+### Kubernetes Ingress (Layer 7) - The Recommended Approach
 An Ingress solves the limitations of the LoadBalancer. It is a "smart router" for HTTP/HTTPS traffic.
 
 In the script, we installed the NGINX Ingress Controller. This controller creates one Azure Load Balancer with one Public IP.
 The Ingress YAML you deploy acts as the configuration rulebook for NGINX.
 Why we use it: It operates at Layer 7. It understands hostnames (www.walcron.com), URL paths, and can terminate SSL certificates. Most importantly for your app, we can use Ingress annotations (like nginx.ingress.kubernetes.io/enable-cors: "true") to perfectly replicate the CORS rules you had set up in your Azure Container App environment!
-3. VirtualService (Istio / Service Mesh)
+### VirtualService (Istio / Service Mesh)
 I saw your note in AzureKubernetes.md about VirtualService. It is important to clarify: A VirtualService is not a native Kubernetes object.
 
 It is a custom resource that only exists if you install a Service Mesh called Istio into your cluster.
