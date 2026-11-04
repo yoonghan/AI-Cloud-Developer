@@ -240,3 +240,10 @@ You plan to deploy container instance named container1.
 
 To which subnets can you deploy container1?
 ```
+
+## Resilience (Preview)
+1. Allow to retry calling next service (downstream) for basic transient error. Your application code (Service A) does not handle the retry logic itself. Your code simply makes a standard, single-shot REST call to Service B (e.g., using fetch() or axios).
+3. The magic happens in the infrastructure layer outside your container code:
+    - The Ingress/Sidecar Proxy: Azure Container Apps injects a proxy (built on Envoy) in front of and alongside your container.
+    - Intercepting the Call: When Service A calls Service B's URL, the proxy intercepts the outgoing request.
+    - Managing the Timeout & Retry: If Service B times out (e.g., returns a 504 Gateway Timeout or a connection refused), the proxy itself catches that failure. It pauses, checks your resiliency configuration, and automatically re-sends the HTTP request to Service B behind the scenes—all before Service A ever realizes anything went wrong.
