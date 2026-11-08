@@ -226,25 +226,14 @@ az containerapp job create \
 ![ACA Scale Rules](img/aca-scale-rules.png)
 
 ## Restrictions
-1. Subnet must be dedicated!
-2. Exclusive use: Just like ACI, this subnet cannot contain any other resources. Not even a VM in that subnet.
-3. No Service Endpoints: Because the subnet is completely managed by the ACA infrastructure, you generally cannot attach standard service endpoints to the ACA subnet. If your container apps need secure access to Azure PaaS services (like Storage or Key Vault), you must use Private Endpoints instead of Service Endpoints.
-4. Need to fulfil:
-    - VNet Integration (Network Visibility)
-Your ACA Environment must be integrated into the same Virtual Network (or a peered VNet) where the Key Vault's Private Endpoint resides.
-Verification: Check your ACA Environment settings in the portal to ensure its virtual network status displays as connected to your custom VNet.
-    - Private Endpoint & Public Access Disabling on Key Vault
-On your Azure Key Vault resource, public network access must be turned off, and a Private Endpoint must be provisioned in your private subnet. Verification: Under the Key Vault Networking blade, confirm that public access is set to Disabled and the Private Endpoint connection state is Approved.
-    - Private DNS Resolution
-When your containerized application calls https://<your-vault-name>.vault.azure.net/, it needs to resolve the vault's name to a private IP address rather than a public one. Action: Ensure you have an Azure Private DNS Zone named privatelink.vaultcore.azure.net linked to your VNet, containing the correct A-record pointing to the private endpoint's IP.
-
-Verification: Run an nslookup or DNS check from inside your container terminal to verify that the Key Vault URL resolves to an internal private IP address (e.g., 10.x.x.x).
-    - Managed Identity & RBAC Authorization
-Even with the private network path established, network security does not replace data-plane authentication.
-
-Action: Enable a System-Assigned (or User-Assigned) Managed Identity on your Container App, and assign it the Key Vault Secrets User role directly on the Key Vault scope.
-
-Verification: Check the Access Control (IAM) blade on your Key Vault to ensure your Container App's managed identity holds the correct role assignment.
+1. Subnet must be dedicated just like ACI or APPService.
+2. No Service Endpoints: Because the subnet is completely managed by the ACA infrastructure, you generally cannot attach standard service endpoints to the ACA subnet. If your container apps need secure access to Azure PaaS services (like Storage or Key Vault), you must use Private Endpoints instead of Service Endpoints.
+3. Need to fulfil:
+    - VNet Integration (Network Visibility) \
+    Your ACA Environment must be integrated into the same Virtual Network (or a peered VNet) where the Key Vault's Private Endpoint resides.
+    - Private Endpoint & Public Access Disabling on Key Vault \ On your Azure Key Vault resource, public network access must be turned off, and a Private Endpoint must be provisioned in your private subnet. **Verification**: Under the Key Vault Networking blade, confirm that public access is set to Disabled and the Private Endpoint connection state is Approved.
+    - Private DNS Resolution \ When your containerized application calls https://<your-vault-name>.vault.azure.net/, it needs to resolve the vault's name to a private IP address rather than a public one. Action: Ensure you have an Azure Private DNS Zone named privatelink.vaultcore.azure.net linked to your VNet, containing the correct A-record pointing to the private endpoint's IP.
+    - Managed Identity & RBAC Authorization \ Even with the private network path established, network security does not replace data-plane authentication. \ Action: Enable a System-Assigned (or User-Assigned) Managed Identity on your Container App, and assign it the Key Vault Secrets User role directly on the Key Vault scope.
 
 ## Resilience (Preview)
 1. Allow to retry calling next service (downstream) for basic transient error. Your application code (Service A) does not handle the retry logic itself. Your code simply makes a standard, single-shot REST call to Service B (e.g., using fetch() or axios).
