@@ -27,6 +27,7 @@ How They Work Together in ACR
 1. System-assigned managed identity for ACR
 2. User-assigned managed identity for ACR
 3. Admin enabled, using username/password. Please enable `az acr update --name myregistry --admin-enabled true`
+4. Service principal `az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME --scopes $ACR_REGISTRY_ID --role acrpull`, by creating service principal that ties to the ACR id.
 
 ## Namespace
 1. Support namespace. E.g. `production/myapp`, `staging/myapp`, `test/myapp`.

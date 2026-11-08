@@ -2,6 +2,8 @@
 
 1. Use AKS for Kubernetes. 
 
+Kluster -> fleet (opt) -> nodepools
+
 ## Authentication to talk with other resources.
 1. Need to use UAMI (User Access Management Identity) for authentication with Azure resources. In this case you need to:
     - Create a UAMI in Azure Portal. Note its Client ID and Resource ID.
