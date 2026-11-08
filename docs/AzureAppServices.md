@@ -3,6 +3,7 @@
 ## Plan
 1. App Service plans determine the location, scale, and features available for the web app.
 2. Dedicated Plans (Basic, Standard, Premium): You select a VM size and pay a fixed hourly rate for that server to be powered on 24/7. You are billed the same amount whether 10,000 users visit your site or zero.
+3. Premium has VNet integration.
 3. WebApp = App Service.
 
 ## Configuration 
@@ -114,3 +115,6 @@ Kudu is a service for deploying and managing web applications.
 ## Web Jobs
 1. Run in container and none
 2. [link](https://learn.microsoft.com/en-us/azure/app-service/overview-webjobs)
+
+## Security
+1. Use `enabled-cd` for auto redeployment for image push.
