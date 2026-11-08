@@ -52,6 +52,9 @@ Null Object | None | Represents missing, empty, or unassigned data.Null Characte
 ## Network
 1. Application Gateway WAF is for HTTP(S) application-layer protection.
 
+## Dedicated Private Network
+1. Azure App service requires a minimum of /24 but suggest /16 and a dedicated serverFarm if VNet integration is required.
+
 ## The Golden Rules for Azure CMK
 To immediately eliminate wrong answers on the exam, lock these rules into your mental map:
 

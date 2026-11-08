@@ -3,7 +3,7 @@
 ## Plan
 1. App Service plans determine the location, scale, and features available for the web app.
 2. Dedicated Plans (Basic, Standard, Premium): You select a VM size and pay a fixed hourly rate for that server to be powered on 24/7. You are billed the same amount whether 10,000 users visit your site or zero.
-3. Premium has VNet integration.
+3. Free/Basic has **NO** VNet integration. If private networking is requires, a dedicated subnet for VNet for server farms is required. A minimum of /24, suggested /16.
 3. WebApp = App Service.
 
 ## Configuration 
@@ -11,7 +11,7 @@
 1. See [environment variables](https://learn.microsoft.com/en-us/azure/app-service/reference-app-settings).
 2. **health** endpoint are configured in App Service Configuration -> Health Check. It can be /health or /healthz or custom.
 3. WEBSITES_ENABLE_APP_SERVICE_STORAGE = true, set to persisted data. Default to false, and useful for persisting data in the container (not recommended, use Azure Storage instead). It's a SMB, meaning all 5 services are sharing and it's persisted. Problem is it is slow.
-4. **always_on**, off means does not scale to 0. Take note: App services scales to 0 after 15mins of unused time if always_on is not set. But you are still charged for this plan! 
+4. **always_on**, off means does not scale to 0. Take note: App services scales to 0 after 20mins of unused time if always_on is not set. But you are still charged for this plan! I have no idea why ppl want to off it.
 5. WEBSITES_PORT = 80, App services use dynamic port, make sure you set this value.
 6. Start up with 
 ```bash
