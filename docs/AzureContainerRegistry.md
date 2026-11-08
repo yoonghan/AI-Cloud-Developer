@@ -86,6 +86,11 @@ az acr repository update \
 az acr tag myImage azure.io/hello:v1 //image to where + tag
 ```
 
+### Versioning stable
+1. Stable only a name, nothing more. But meaning means it's tested compared to **latest**.
+2. To ensure, use 3rd-party like `cosign sign --key cosign.key <your-registry-name>.azurecr.io/my-ai-app:stable`.
+3. So before use, run `cosign verify --key cosign.pub <your-registry-name>.azurecr.io/my-ai-app:stable`.
+
 ## Purging
 1. For retention (after purge), only **premium** is available.
 2. ACR purge
