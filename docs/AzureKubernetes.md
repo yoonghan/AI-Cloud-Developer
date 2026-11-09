@@ -1,78 +1,113 @@
 # Azure Kubernetes Service
 
-1. Use AKS for Kubernetes. 
 
-Kluster -> fleet (opt) -> nodepools
+## Topology
+1. Need not to understand for exam
+```mermaid
+graph TD
+    subgraph FleetLayer ["Azure Kubernetes Fleet Manager (Optional Enterprise Layer)"]
+        Fleet["Fleet Resource Manager"]
+        FleetPolicy["Multi-Cluster Workload & Upgrade Placement"]
+        Fleet --> FleetPolicy
+    end
+
+    subgraph Cluster1 ["AKS Cluster 1 (Managed Control Plane)"]
+        CP1["Kubernetes Control Plane API"]
+        
+        subgraph NodePoolA ["Node Pool 1 (System Pool)"]
+            Node1["System Node (VM)"]
+            CorePods["System Pods / Core Services"]
+            Node1 --- CorePods
+        end
+
+        subgraph NodePoolB ["Node Pool 2 (User / GPU Pool)"]
+            Node2["Worker Node (VM)"]
+            Node3["Worker Node (VM)"]
+            AppPod1["App / AI Pod"]
+            AppPod2["App / AI Pod"]
+            Node2 --- AppPod1
+            Node3 --- AppPod2
+        end
+
+        CP1 --> NodePoolA
+        CP1 --> NodePoolB
+    end
+
+    subgraph Cluster2 ["AKS Cluster 2 (Managed Control Plane)"]
+        CP2["Kubernetes Control Plane API"]
+        NodePoolC["Node Pool 1"]
+        CP2 --> NodePoolC
+    end
+
+    FleetPolicy -->|Orchestrates| CP1
+    FleetPolicy -->|Orchestrates| CP2
+
+    classDef optional fill:#f9f9f9,stroke:#999,stroke-dasharray: 5 5;
+    class FleetLayer optional;
+```
 
 ## Authentication to talk with other resources.
 1. Need to use UAMI (User Access Management Identity) for authentication with Azure resources. In this case you need to:
     - Create a UAMI in Azure Portal. Note its Client ID and Resource ID.
     - Example UAMI command:
-
-  ```
-  az identity create --name my-uami --resource-group my-resource-group --location my-location
-  UAMI_CLIENT_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'clientId' -o tsv)
-  UAMI_PRINCIPAL_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'principalId' -o tsv)
-  ```
-
+      ```bash
+      az identity create --name my-uami --resource-group my-resource-group --location my-location
+      UAMI_CLIENT_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'clientId' -o tsv)
+      UAMI_PRINCIPAL_ID=$(az identity show --name $UAMI_NAME --resource-group $RESOURCE_GROUP --query 'principalId' -o tsv)
+      ```
     - Not required to assign role to UAMI.
     - Then create a Service Account in the AKS cluster, using the UAMI's Client ID and Resource ID.
     - Example of Service Account:
-
-  ```
-  apiVersion: v1
-  kind: ServiceAccount
-  metadata:
-    annotations:
-      azure.workload.identity/client-id: <UAMI_CLIENT_ID>
-    name: azure-workload-identity
-    namespace: default
-  ```
-
+      ```bash
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        annotations:
+          azure.workload.identity/client-id: <UAMI_CLIENT_ID>
+        name: azure-workload-identity
+        namespace: default
+      ```
     - Enable workload identity in AKS:
-  ```
-  az aks update \
-    --resource-group myResourceGroup \
-    --name myAKSCluster \
-    --enable-workload-identity \
-    --attach-acr <acr-name>
-  ```
-
+      ```
+      az aks update \
+        --resource-group myResourceGroup \
+        --name myAKSCluster \
+        --enable-workload-identity \
+        --attach-acr <acr-name>
+      ```
     - Link the UAMI to the Service Account in AKS:
-  ```
-  AKS_OIDC_ISSUER=$(az aks show --resource-group <resource-group> --name <cluster-name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
+      ```
+      AKS_OIDC_ISSUER=$(az aks show --resource-group <resource-group> --name <cluster-name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
 
-  az identity federated-credential create \
-    --name <federated-identity-name> \
-    --identity-name <workload-identity-name> \
-    --resource-group <resource-group> \
-    --issuer "$AKS_OIDC_ISSUER" \
-    --subject "system:serviceaccount:<namespace>:<service-account-name>" \
-    --audiences "api://AzureADTokenExchange"
-  ```
-
+      az identity federated-credential create \
+        --name <federated-identity-name> \
+        --identity-name <workload-identity-name> \
+        --resource-group <resource-group> \
+        --issuer "$AKS_OIDC_ISSUER" \
+        --subject "system:serviceaccount:<namespace>:<service-account-name>" \
+        --audiences "api://AzureADTokenExchange"
+      ```
     - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
     - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
     - Bind pod with the service-account
-  
-  ```yaml
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: study-buddy-api
-    namespace: ai-workloads
-  spec:
-    replicas: 2
-    template:
+      ```yaml
+      apiVersion: apps/v1
+      kind: Deployment
       metadata:
-        labels:
-          app: study-buddy
-          # 1. REQUIRED: Triggers the AKS webhook to inject the tokens
-          azure.workload.identity/use: "true" 
+        name: study-buddy-api
+        namespace: ai-workloads
       spec:
-        # 2. REQUIRED: Run as the ServiceAccount we annotated in Step 1
-        serviceAccountName: study-buddy-sa
-  ```
+        replicas: 2
+        template:
+          metadata:
+            labels:
+              app: study-buddy
+              # 1. REQUIRED: Triggers the AKS webhook to inject the tokens
+              azure.workload.identity/use: "true" 
+          spec:
+            # 2. REQUIRED: Run as the ServiceAccount we annotated in Step 1
+            serviceAccountName: study-buddy-sa
+      ```
 2. System-assigned managed identity does not work as it does not have Client ID.
 3. Need to use workload identity for authentication with Azure resources.
 4. Service Principal (Client ID + Client Secret) do work, but is not recommended, it can be exposed.
