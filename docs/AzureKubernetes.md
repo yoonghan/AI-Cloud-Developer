@@ -75,7 +75,7 @@ graph TD
         --enable-workload-identity \
         --attach-acr <acr-name>
       ```
-    - Link the UAMI to the Service Account in AKS:
+    - Link the UAMI to the Service Account in AKS, create Federated Identity:
       ```
       AKS_OIDC_ISSUER=$(az aks show --resource-group <resource-group> --name <cluster-name> --query "oidcIssuerProfile.issuerUrl" -o tsv)
 
@@ -87,7 +87,7 @@ graph TD
         --subject "system:serviceaccount:<namespace>:<service-account-name>" \
         --audiences "api://AzureADTokenExchange"
       ```
-    - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assigne the role to UAMI's UAMI_PRINCIPAL_ID.
+    - Each resources that needs to be accessed by the pod needs to be assigned to the UAMI in Azure Portal. I.e assign the role to UAMI's UAMI_PRINCIPAL_ID.
     - Federated Identity is required! A ServiceAccount (SA) is a Kubernetes concept (it only exists inside your cluster). A UAMI is an Azure concept (it exists in Entra ID / Azure AD). By default, Azure has absolutely no idea what a Kubernetes ServiceAccount is. The Federated Credential is the literal "bridge of trust" between these two entirely different systems. "Hey Azure, if you ever receive a token request that is cryptographically signed by my specific AKS cluster ($AKS_OIDC_ISSUER), AND the subject asking for it is exactly system:serviceaccount:walcron-app:walcron-sa, I want you to trust that request and let them act as my UAMI."
     - Bind pod with the service-account
       ```yaml
@@ -123,6 +123,15 @@ kubectl create secret docker-registry ghcr-secret \
 
 #or 
 az aks update --resource-group rg --name myAKS --attach-acr myacr
+```
+
+### Overall
+```mermaid
+flow TD
+  UAMI --> B[Create Service Account, using UAMI] 
+  B --> C[Enable Workload Identity + attach acr]
+  C --> D[Federated Identity, service account]
+  pod --> D
 ```
 
 ## Service / Virtual Service
@@ -293,16 +302,17 @@ az identity federated-credential create \
 1. Inspect Services using kubectl
 You can use kubectl commands to examine Services in detail:
 
-Bash
+```bash
 kubectl get service -n ai-workloads
 kubectl describe service <service-name> -n ai-workloads
 kubectl get endpointslices -l kubernetes.io/service-name=<service-name> -n ai-workloads
-In the Service definition, you check:
+```
 
-Selector labels that should match pod labels
-Ports and targetPorts that should align with container ports
-EndpointSlices that list the actual pod IPs that receive traffic
-If a Service has no EndpointSlices, your AI API can't receive traffic even if pods are healthy. Resolving label mismatches or port configuration restores connectivity.
+2. In the Service definition, you check:
+    - Selector labels that should match pod labels
+    - Ports and targetPorts that should align with container ports
+    - EndpointSlices that list the actual pod IPs that receive traffic
+    - If a Service has no EndpointSlices, your AI API can't receive traffic even if pods are healthy. Resolving label mismatches or port configuration restores connectivity.
 
 ## Azure Container Interface (CNI)
 1. Kubernetes uses Container Networking Interface (CNI) plugins to manage networking in Kubernetes clusters. CNI plugins handle assigning IP addresses to pods, routing network traffic between pods, routing Kubernetes service traffic, and more.
