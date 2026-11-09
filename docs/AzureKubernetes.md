@@ -277,7 +277,7 @@ containers:
 ## Disadvantage compared to ACA
 1. More complicated setup and management.
 
-## Scaling
+## Pod Scaling
 1. Horizontal pod autoscaling. Not great it only checks on health and CPU/Memory usage and not based on external events.
 ```bash
 kubectl apply -f hpa-scale-up.yaml
@@ -325,6 +325,23 @@ az identity federated-credential create \
     --subject "system:serviceaccount:keda:keda-operator" \
     --audience "api://AzureADTokenExchange"
 ```
+
+## Cluster scaling
+1. Manual
+2. Automatic Scaling (The Cluster Autoscaler)
+What it is: The cluster automatically adds or removes nodes based on real-time pod demands.
+
+How it works: You set a minimum and maximum boundary (e.g., Min: 1, Max: 5).
+
+Under the hood:
+
+If your Horizontal Pod Autoscaler (HPA) or KEDA spins up more pods, and those pods enter a Pending state because your current nodes are out of CPU/Memory, the Kubernetes Cluster Autoscaler detects the bottleneck.
+
+The Cluster Autoscaler talks to Azure and instructs the underlying VMSS to spin up a new virtual machine.
+
+Once the VM boots and joins the cluster, Kubernetes safely schedules the pending pods onto it.
+
+Conversely, if nodes remain underutilized for a sustained period, the Cluster Autoscaler cordons, drains, and tells VMSS to delete the idle nodes down to your minimum limit.
 
 ## Troubleshooting
 1. Inspect Services using kubectl
@@ -422,13 +439,33 @@ Why Ingress? It is the sweet spot. It provides the exact Layer 7 HTTP routing, C
     B. Enable the ACR admin user and configure the cluster to use those credentials.
     C. *Assign the AKS cluster’s managed identity the AcrPull role on the ACR resource.
     D. Whitelist the AKS node public IP addresses in the ACR network rules so no auth is required.
-2. You need AKS to automatically add or remove nodes to match workload demand. Which configuration is the correct way to enable automatic node scaling?
-    A. Configure a HorizontalPodAutoscaler for Deployments.
-    B. *Enable the cluster autoscaler on the AKS node pool and set minimum and maximum node counts.
-    C. Deploy a CronJob that creates or deletes nodes on a schedule.
-    D. Use a Virtual Node (ACI) add-on only; AKS will handle node scaling automatically.
+2) You want to use your organization's cloud identity accounts to control who can administer Kubernetes resources in your AKS cluster. Which approach is recommended now that Azure AD is rebranded?
+    A. Create equivalent local Kubernetes users and map them to Microsoft Entra groups.
+    B. Integrate the cluster with Microsoft Entra ID (formerly Azure AD) and use Kubernetes RBAC tied to Entra principals.
+    C. Use the cluster service principal as the single admin and share its credentials with operators.
+    D. Rely only on Kubernetes RoleBindings without integrating Microsoft Entra ID.
 3. Your application running in AKS needs to access Azure Key Vault without storing long-lived credentials in pods. Which is the best, recommended pattern?
     A. Store a service principal secret in a Kubernetes Secret and mount it into pods.
     B. *Use Workload Identity (Azure AD Pod-managed identities) so pods can obtain short-lived tokens to access Key Vault.
     C. Use imagePullSecrets to provide Key Vault credentials to pods.
     D. Copy secrets from Key Vault into Kubernetes Secrets and update them manually.
+4. You need to enforce Kubernetes NetworkPolicies in AKS so pods in one namespace cannot reach pods in another. Which configuration should you choose when creating the cluster?
+    A) Use the kubenet network plugin and deploy Calico as a DaemonSet to enforce NetworkPolicies.
+    B) Use Azure CNI and select the Azure Network Policy option for the cluster.
+    C) NetworkPolicies are not supported on AKS.
+    D) Use Azure CNI with default routing; AKS will automatically isolate namespaces without further configuration.
+5. You want node pools to scale automatically based on pending pods. Which is the correct requirement and configuration for AKS cluster autoscaler?
+    A) Cluster autoscaler works only with Availability Set-backed node pools; enable autoscaler and set the min/max for the node pool.
+    B) No special configuration is needed; AKS autoscaler is on by default for all node pools.
+    C) Use Virtual Machine Scale Set (VMSS)-backed node pools and enable the cluster autoscaler for the node pool with appropriate min and max node counts.
+    D) AKS does not support autoscaling; you must write custom scripts to add/remove nodes.
+6. You want to collect container logs and performance metrics from an AKS cluster into Azure for alerting and troubleshooting. Which configuration is required?
+    A) Install a third-party Fluentd daemonset and forward logs to Azure Monitor directly.
+    B) Enable Azure Monitor for containers (Container insights) and connect the cluster to a Log Analytics workspace.
+    C) Configure each application to push logs to an Event Hub and then ingest into Azure Monitor.
+    D) Enable diagnostic settings on the AKS resource; this alone will capture container stdout/stderr and metrics into Azure Storage.
+7. Your application must scale automatically when load increases. You want pods to scale based on CPU usage and the cluster to add nodes when there are not enough resources. Which combination should you use?
+    A) Virtual Node + manual VMSS autoscale.
+    B) Horizontal Pod Autoscaler (HPA) for pods and Cluster Autoscaler (node autoscaler) for nodes.
+    C) KEDA alone for both pod and node scaling.
+    D) Use only VM scale set autoscale rules based on average CPU across VMs.    
