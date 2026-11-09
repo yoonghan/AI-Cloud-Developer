@@ -231,10 +231,19 @@ az containerapp job create \
 ```
 ACA set to subnet and set with (AKV ipaddress/url) -> AKV with private end point
 ```
-3. Service Endpoints: Compared to private endpoint it still have public access (and no private IP address - the diff). However the subnet can be set to to connect to AKV service endpoint. 
-```
-ACA (in VNet Subnet) -> Subnet (Service Endpoint enabled for Microsoft.KeyVault) -> Azure Backbone -> AKV (Firewall configured to allow the Subnet)
-```
+3. Service Endpoints: 
+    - Compared to private endpoint it still have public access (and no private IP address - the diff). However the subnet can be set to to connect to AKV service endpoint. 
+    ```
+    ACA (in VNet Subnet) -> Subnet (Service Endpoint enabled for Microsoft.KeyVault) -> Azure Backbone -> AKV (Firewall configured to allow the Subnet)
+    ```
+    - Can only be created ONLY during creation in Container environment!
+    ```
+    az containerapp env create \
+    --name $ENV_NAME \
+    --resource-group $RESOURCE_GROUP \
+    --location $LOCATION \
+    --infrastructure-subnet-resource-id $SUBNET_ID
+    ```
 4. Need to fulfil (private endpoint):
     - VNet Integration (Network Visibility) \
     Your ACA Environment must be integrated into the same Virtual Network (or a peered VNet) where the Key Vault's Private Endpoint resides.
@@ -248,3 +257,5 @@ ACA (in VNet Subnet) -> Subnet (Service Endpoint enabled for Microsoft.KeyVault)
     - The Ingress/Sidecar Proxy: Azure Container Apps injects a proxy (built on Envoy) in front of and alongside your container.
     - Intercepting the Call: When Service A calls Service B's URL, the proxy intercepts the outgoing request.
     - Managing the Timeout & Retry: If Service B times out (e.g., returns a 504 Gateway Timeout or a connection refused), the proxy itself catches that failure. It pauses, checks your resiliency configuration, and automatically re-sends the HTTP request to Service B behind the scenes—all before Service A ever realizes anything went wrong.
+
+ ## Deployment Stack
