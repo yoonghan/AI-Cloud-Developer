@@ -259,3 +259,5 @@ ACA set to subnet and set with (AKV ipaddress/url) -> AKV with private end point
     - Managing the Timeout & Retry: If Service B times out (e.g., returns a 504 Gateway Timeout or a connection refused), the proxy itself catches that failure. It pauses, checks your resiliency configuration, and automatically re-sends the HTTP request to Service B behind the scenes—all before Service A ever realizes anything went wrong.
 
  ## Deployment Stack
+ 1. It's in a blade, but this is just to configure logs.
+ ![Deployment Stack](img/aca-deployment-stack)
