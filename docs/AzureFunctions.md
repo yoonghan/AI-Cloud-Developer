@@ -51,8 +51,8 @@
 ## Key Vault & Configuration
 
 1. **Key Vault Reference Syntax in App Settings**:
-   - `@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/<secret-name>/)`
-   - `@Microsoft.KeyVault(VaultName=<vault-name>;SecretName=<secret-name>)`
+    - `@Microsoft.KeyVault(SecretUri=https://<vault-name>.vault.azure.net/secrets/<secret-name>/)`
+    - `@Microsoft.KeyVault(VaultName=<vault-name>;SecretName=<secret-name>)`
 2. **Key Rotation & Refresh**: Key Vault references automatically re-fetch updated secret values within 24 hours. To trigger an immediate refresh, update any app setting (e.g., touch a configuration value) or implement a sentinel key pattern with Azure App Configuration.
 3. **Version Pinning**: To pin a specific secret version, append the version GUID to the URI (`https://<vault-name>.vault.azure.net/secrets/<secret-name>/<version-guid>`) or specify `SecretVersion=<version-guid>`.
 4. **Authentication**: Enable System-Assigned or User-Assigned Managed Identity on the Function App and grant the identity the `Key Vault Secrets User` role on the Key Vault.
@@ -61,26 +61,26 @@
 ## Identity via Storage (`AzureWebJobsStorage`)
 
 1. **Runtime Storage Usage**: Azure Functions uses `AzureWebJobsStorage` for:
-   - **Code Storage**: Deployment package storage for serverless execution.
-   - **State & Coordination**: Storage blob leases ensure singleton execution (e.g., Timer Triggers fire on only one instance when scaled out).
-   - **Internal Queues**: Managing execution retries, scale-out behavior, and Durable Functions orchestration state.
-   - **Logging**: Temporary log buffers before ingestion into Application Insights.
+    - **Code Storage**: Deployment package storage for serverless execution.
+    - **State & Coordination**: Storage blob leases ensure singleton execution (e.g., Timer Triggers fire on only one instance when scaled out).
+    - **Internal Queues**: Managing execution retries, scale-out behavior, and Durable Functions orchestration state.
+    - **Logging**: Temporary log buffers before ingestion into Application Insights.
 2. **Connection Methods**:
-   - **Connection String (Legacy / Local)**: `AzureWebJobsStorage = "DefaultEndpointsProtocol=https;AccountName=<account>;AccountKey=<key>;EndpointSuffix=core.windows.net"` or `"UseDevelopmentStorage=true"`.
-   - **Identity-based Connection (Recommended)**: Configured using `AzureWebJobsStorage__accountName = <account_name>` (or `__blobServiceUri`, `__queueServiceUri`, `__tableServiceUri`). Uses Managed Identity without storing connection keys.
+    - **Connection String (Legacy / Local)**: `AzureWebJobsStorage = "DefaultEndpointsProtocol=https;AccountName=<account>;AccountKey=<key>;EndpointSuffix=core.windows.net"` or `"UseDevelopmentStorage=true"`.
+    - **Identity-based Connection (Recommended)**: Configured using `AzureWebJobsStorage__accountName = <account_name>` (or `__blobServiceUri`, `__queueServiceUri`, `__tableServiceUri`). Uses Managed Identity without storing connection keys.
 3. **Required Azure RBAC Data Plane Roles**:
-   - `Storage Blob Data Contributor`: Required for blob read/write/delete access (deployment packages, state, blob triggers). *(Note: `Storage Account Contributor` is a Management Plane role and does NOT grant data plane access).*
-   - `Storage Queue Data Contributor`: Required for queue triggers and runtime coordination.
-   - `Storage Table Data Contributor`: Required for keys, locks, and Durable Functions storage tables.
+    - `Storage Blob Data Contributor`: Required for blob read/write/delete access (deployment packages, state, blob triggers). *(Note: `Storage Account Contributor` is a Management Plane role and does NOT grant data plane access).*
+    - `Storage Queue Data Contributor`: Required for queue triggers and runtime coordination.
+    - `Storage Table Data Contributor`: Required for keys, locks, and Durable Functions storage tables.
 4. **Secret Storage Setting**: Setting `"AzureWebJobsSecretStorageType": "Files"` in `local.settings.json` stores function auth keys in the local file system instead of Azure Blob Storage.
 
 ## Authentication & Authorization
 
 1. **Authorization Levels (`auth_level`)**:
-   - **Function key**: Scoped to a single function. Passed via `x-functions-key` header or `?code=` query parameter.
-   - **Host key**: Scoped to all HTTP-triggered functions in the app.
-   - **System key**: Used by runtime extensions (e.g., `mcp_extension` system key).
-   - **Master key**: Administrative key that grants full access and overrides all other keys. Keep confidential.
+    - **Function key**: Scoped to a single function. Passed via `x-functions-key` header or `?code=` query parameter.
+    - **Host key**: Scoped to all HTTP-triggered functions in the app.
+    - **System key**: Used by runtime extensions (e.g., `mcp_extension` system key).
+    - **Master key**: Administrative key that grants full access and overrides all other keys. Keep confidential.
 2. **Code Examples**:
    ```python
    @app.route(route="classify", methods=["POST"], auth_level=func.AuthLevel.FUNCTION)
@@ -109,11 +109,11 @@
 ## Tips & Best Practices
 
 1. **Azure Documentation & `host.json` Settings**:
-   - Search for exact binding property names in `host.json` (e.g., `maxConcurrentCalls` for Service Bus triggers).
-   - Reference: [Service Bus bindings for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-service-bus?tabs=isolated-process%2Cextensionv5&pivots=programming-language-csharp)
+    - Search for exact binding property names in `host.json` (e.g., `maxConcurrentCalls` for Service Bus triggers).
+    - Reference: [Service Bus bindings for Azure Functions](https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-service-bus?tabs=isolated-process%2Cextensionv5&pivots=programming-language-csharp)
 2. **Log Streaming**: On Linux Function Apps, Application Insights must be configured properly to stream live execution logs.
 3. **Durable Functions**: Extension of Azure Functions for stateful workflows. Core components:
-   - **Client Function (Starter)**: Triggers orchestrations from HTTP requests, timers, or queue events.
-   - **Orchestrator Function**: Defines workflow logic in code (must be deterministic).
-   - **Activity Function**: Executes individual steps/tasks (I/O, database access, API calls).
-   - **Entity Functions**: Manages a small piece of durable state through explicit operations. Entities can help coordinate shared state, but an orchestrator and activities are sufficient for the document-processing scenario in this module.
+    - **Client Function (Starter)**: Triggers orchestrations from HTTP requests, timers, or queue events.
+    - **Orchestrator Function**: Defines workflow logic in code (must be deterministic).
+    - **Activity Function**: Executes individual steps/tasks (I/O, database access, API calls).
+    - **Entity Functions**: Manages a small piece of durable state through explicit operations. Entities can help coordinate shared state, but an orchestrator and activities are sufficient for the document-processing scenario in this module.

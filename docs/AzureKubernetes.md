@@ -416,3 +416,19 @@ Can you use a Service to expose it? Yes (using type: LoadBalancer), but you lose
 Can you use a VirtualService? Yes, but it requires installing Istio, which is very complex and overlaps with your existing Dapr setup.
 Why Ingress? It is the sweet spot. It provides the exact Layer 7 HTTP routing, CORS support, and SSL capabilities that your Azure Container App was giving you out of the box, without the overhead of a full Service Mesh.
 
+## Sample question
+1. You have an AKS cluster and an Azure Container Registry (ACR) in the same subscription. You want AKS to pull container images from ACR without storing credentials in Kubernetes. Which configuration is the most secure and recommended approach?
+    A. Create a Kubernetes imagePullSecret with ACR admin credentials and reference it in pod specs.
+    B. Enable the ACR admin user and configure the cluster to use those credentials.
+    C. *Assign the AKS cluster’s managed identity the AcrPull role on the ACR resource.
+    D. Whitelist the AKS node public IP addresses in the ACR network rules so no auth is required.
+2. You need AKS to automatically add or remove nodes to match workload demand. Which configuration is the correct way to enable automatic node scaling?
+    A. Configure a HorizontalPodAutoscaler for Deployments.
+    B. *Enable the cluster autoscaler on the AKS node pool and set minimum and maximum node counts.
+    C. Deploy a CronJob that creates or deletes nodes on a schedule.
+    D. Use a Virtual Node (ACI) add-on only; AKS will handle node scaling automatically.
+3. Your application running in AKS needs to access Azure Key Vault without storing long-lived credentials in pods. Which is the best, recommended pattern?
+    A. Store a service principal secret in a Kubernetes Secret and mount it into pods.
+    B. *Use Workload Identity (Azure AD Pod-managed identities) so pods can obtain short-lived tokens to access Key Vault.
+    C. Use imagePullSecrets to provide Key Vault credentials to pods.
+    D. Copy secrets from Key Vault into Kubernetes Secrets and update them manually.
