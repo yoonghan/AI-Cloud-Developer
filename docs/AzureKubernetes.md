@@ -126,12 +126,39 @@ az aks update --resource-group rg --name myAKS --attach-acr myacr
 ```
 
 ### Overall
+1. Create UAMI. This is used in Service Account.
+2. Create Service Account in cluster, a service account is "workload identity"
+3. Create Federated Identity, this links to workload identity (Service Account)
+4. Bind Pod to the Service Account.
+
 ```mermaid
-flow TD
-  UAMI --> B[Create Service Account, using UAMI] 
-  B --> C[Enable Workload Identity + attach acr]
-  C --> D[Federated Identity, service account]
-  pod --> D
+graph TD
+    subgraph Azure ["1. Azure Entra ID (The Cloud)"]
+        UAMI["User Assigned Managed Identity (UAMI)<br/>- Has Client ID & Principal ID<br/>- Assigned permissions to Azure resources"]
+        FedCred["Federated Credential<br/>(The 'Bridge of Trust')"]
+        UAMI --- FedCred
+    end
+
+    subgraph AKS ["2. Azure Kubernetes Service (The Cluster)"]
+        OIDC["AKS OIDC Issuer URL<br/>(The Cluster's 'Passport Office')"]
+        SA["Kubernetes Service Account<br/>- Annotated with UAMI Client ID"]
+        Pod["Pod / Deployment YAML<br/>- Bound to Service Account<br/>- Uses azure.workload.identity/use: true"]
+        
+        OIDC -.->|Cryptographically signs| SA
+        SA -->|Injected into| Pod
+    end
+
+    %% The Bridge Connection
+    FedCred ==>|Trusts OIDC Issuer &<br/>matches Service Account subject| OIDC
+    
+    %% Runtime Flow
+    Pod -->|1. Requests Token| OIDC
+    Pod -->|2. Presents token to Azure Entra ID| UAMI
+
+    classDef azure fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef aks fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    class Azure azure;
+    class AKS aks;
 ```
 
 ## Service / Virtual Service
