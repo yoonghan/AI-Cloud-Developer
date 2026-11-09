@@ -227,8 +227,15 @@ az containerapp job create \
 
 ## Restrictions
 1. Subnet must be dedicated just like ACI or APPService.
-2. No Service Endpoints: Because the subnet is completely managed by the ACA infrastructure, you generally cannot attach standard service endpoints to the ACA subnet. If your container apps need secure access to Azure PaaS services (like Storage or Key Vault), you must use Private Endpoints instead of Service Endpoints.
-3. Need to fulfil:
+2. Private Endpoints: If your container apps need secure access to Azure PaaS services (like Storage or Key Vault), you must use Private Endpoints instead of Service Endpoints.
+```
+ACA set to subnet and set with (AKV ipaddress/url) -> AKV with private end point
+```
+3. Service Endpoints: Compared to private endpoint it still have public access (and no private IP address - the diff). However the subnet can be set to to connect to AKV service endpoint. 
+```
+ACA (in VNet Subnet) -> Subnet (Service Endpoint enabled for Microsoft.KeyVault) -> Azure Backbone -> AKV (Firewall configured to allow the Subnet)
+```
+4. Need to fulfil (private endpoint):
     - VNet Integration (Network Visibility) \
     Your ACA Environment must be integrated into the same Virtual Network (or a peered VNet) where the Key Vault's Private Endpoint resides.
     - Private Endpoint & Public Access Disabling on Key Vault \ On your Azure Key Vault resource, public network access must be turned off, and a Private Endpoint must be provisioned in your private subnet. **Verification**: Under the Key Vault Networking blade, confirm that public access is set to Disabled and the Private Endpoint connection state is Approved.
