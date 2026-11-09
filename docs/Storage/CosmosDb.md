@@ -19,7 +19,8 @@
 
 ## Indexing Mode
 1. Consistent / None
-2. Include partition key in the index. Azure Cosmos DB doesn't index the partition key automatically when you use the exclude-by-default strategy. (strange)
+2. Note: Partition keys are not automatically indexed, except with default includedPaths(cause it's /*).
+3. Default is /* for includePaths which is RU consuming.
 
 ## Consistency 
 1. Strong (synchronous) -> Bounded Staleness (need agreement to K versions or T seconds) -> Session (need header) -> Consistent Prefix(Guaranteed) -> Eventual (fastest).
