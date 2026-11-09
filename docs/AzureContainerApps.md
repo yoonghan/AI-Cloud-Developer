@@ -40,6 +40,13 @@ az containerapp update \
 6. Update default replica `az containerapp update --name <app-name> --resource-group <resource-group> --revision <revision-name>`
 7. **Secret** change does not bump revision. You need to update the image to bump revision and also issue `az containerapp revision restart --name <app-name> --resource-group <resource-group>`. However, you can use `az containerapp update --name <app-name> --resource-group <resource-group> --set template.containers[0].env[0].secretRef=<new-secret-ref>` to update the secret reference, and it will bump the revision.
 8. **Keyvault Secret** also does not bump revision, but there is a caveat that there is _cache_ and might not be updated. The best force is to update revision!
+9. Change in condition of:
+    - container image
+    - environment variables
+    - __secrets__ <--No
+    - resource allocation
+    - scale rules
+    - init containers
 
 ## Image pull behavior
 1. Understanding when App Service pulls images helps you plan for deployment scenarios and troubleshoot issues.
@@ -69,7 +76,7 @@ az containerapp update \
 1. Similar to Azure App Service, ACA uses managed identity or service principal for registry authentication.
 2. Note any application that uses UAMI (not system managed identity), a CLIENT_ID needs to be provided via environment variable. You MUST set the AZURE_CLIENT_ID environment variable in your Container App. Why? Because a single Container App can have multiple User-Assigned Identities attached to it. When your code calls new DefaultAzureCredential(), it uses that variable to know which specific identity it should request an Entra ID token for.
 
-## Revisions
+## Revision Update
 1. Change in condition of:
     - container image
     - environment variables
@@ -217,11 +224,12 @@ az containerapp job create \
 ```
 
 ### Traffic Management
-1. To have traffic-based scaling, enable `--revision-mode multiple`. Example `--revision-weight order-api--v1=80 order-api--v2=20`.
-2. Can use latest, `--revision-weights <OLD_REVISION_NAME>=80 latest=20` or `--latest-revision true --weight 100`.
-3. Labelling with revision-weight is only for traffic management. 
-4. Labelling with `az containerapp revision label add --name <APP_NAME> --resource-group <RESOURCE_GROUP> --revision <REVISION_NAME> --label <LABEL_NAME>`.
-5. Remember you cannot scale specific revision! You need redeployment, hence only the latest version is scaled; and you need to update the traffic control.
+1. Need to "enable" multi-revision mode.
+2. To have traffic-based scaling, enable `--revision-mode multiple`. Example `--revision-weight order-api--v1=80 order-api--v2=20`.
+3. Can use latest, `--revision-weights <OLD_REVISION_NAME>=80 latest=20` or `--latest-revision true --weight 100`.
+4. Labelling with revision-weight is only for traffic management. 
+5. Labelling with `az containerapp revision label add --name <APP_NAME> --resource-group <RESOURCE_GROUP> --revision <REVISION_NAME> --label <LABEL_NAME>`.
+6. Remember you cannot scale specific revision! You need redeployment, hence only the latest version is scaled; and you need to update the traffic control.
 
 ![ACA Scale Rules](img/aca-scale-rules.png)
 

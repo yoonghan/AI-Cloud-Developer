@@ -260,9 +260,9 @@ containers:
     - It creates an Azure RBAC role assignment, granting the "AcrPull" role to the AKS Kubelet identity, scoped to that specific registry.
 
 ## Storage
-1. Link [here](https://learn.microsoft.com/en-us/training/modules/store-data-azure-kubernetes-service/2-define-storage?pivots=text)
+1. Link [Container Storage](https://learn.microsoft.com/en-us/azure/storage/container-storage/container-storage-introduction), [CSI](https://learn.microsoft.com/en-us/azure/aks/csi-storage-drivers?pivots=azure-disks)
 2. Volume to choose:
-    - CSI
+    - CSI - legacy
     - Azure Container Storage - Requires to be enabled `az aks update -n myAKSCluster -g myResourceGroup --enable-azure-container-storage ephemeralDisk`, then in YAML specify `storagePools` in `storageClass`.
 3. Choose Azure Container Storage for data-heavy AI workloads (like vector databases) because it pools underlying hardware—like lightning-fast local NVMe drives—into a unified, software-defined layer. It also bypasses standard Azure Disk attach/detach bottlenecks, enabling much faster pod failovers and volume scaling across your cluster.
 
