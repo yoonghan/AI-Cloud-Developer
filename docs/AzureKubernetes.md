@@ -126,10 +126,11 @@ az aks update --resource-group rg --name myAKS --attach-acr myacr
 ```
 
 ### Overall
-1. Create UAMI. This is used in Service Account.
-2. Create Service Account in cluster, a service account is "workload identity"
-3. Create Federated Identity, this links to workload identity (Service Account)
-4. Bind Pod to the Service Account.
+1. Create the Azure Identity (UAMI) - You start in Azure by creating a User-Assigned Managed Identity. This identity is given the permissions (RBAC roles) to access target resources like Key Vault or Azure OpenAI.
+2. Create the Kubernetes Service Account - Inside your cluster, you create a standard Service Account and annotate it with the UAMI's Client ID so Kubernetes knows they are linked.
+3. Enable Workload Identity on AKS - You turn on the feature on your cluster, which spins up the cluster's public OIDC Issuer URL (acting as your cluster's official "Passport Office").
+4. Build the Bridge (Federated Credential) - Azure and Kubernetes don't automatically know about each other. By creating a Federated Credential in Azure Entra ID, you tell Azure: "Trust tokens coming from this specific AKS OIDC URL, but only if they originate from this exact Kubernetes Service Account."
+5. In your Deployment YAML, you specify the serviceAccountName and the webhook label (azure.workload.identity/use: "true"). When the pod boots up, AKS automatically injects the right configuration files so your application code can securely fetch Azure tokens passwordless.
 
 ```mermaid
 graph TD
