@@ -224,12 +224,24 @@ az containerapp job create \
 ```
 
 ### Traffic Management
-1. Need to "enable" multi-revision mode.
-2. To have traffic-based scaling, enable `--revision-mode multiple`. Example `--revision-weight order-api--v1=80 order-api--v2=20`.
+1. Need to "enable" multi-revision mode in 'ingress'.
+2. To have traffic-based scaling, enable `--revision-mode multiple`. Example: 
+  ```bash
+    az containerapp ingress traffic set \
+    --name <APP_NAME> \
+    --resource-group <RESOURCE_GROUP> \
+    --revision-weight <REVISION_1>=50 <REVISION_2>=50
+  ```
 3. Can use latest, `--revision-weights <OLD_REVISION_NAME>=80 latest=20` or `--latest-revision true --weight 100`.
 4. Labelling with revision-weight is only for traffic management. 
 5. Labelling with `az containerapp revision label add --name <APP_NAME> --resource-group <RESOURCE_GROUP> --revision <REVISION_NAME> --label <LABEL_NAME>`.
 6. Remember you cannot scale specific revision! You need redeployment, hence only the latest version is scaled; and you need to update the traffic control.
+7. Blue/green, remember to update but traffic does go to new.
+    - Set revision to `az containerapp create .. --revisions-mode multiple`
+    - Set with `az containerapp revision label add ... --label blue --revision $APP_NAME--$BLUE_COMMIT_ID`.
+    - Deploy new green `az containerapp update --name $APP_NAME ... --image mcr.microsoft.com/k8se/samples/test-app:$GREEN_COMMIT_ID --revision-suffix $GREEN_COMMIT_ID`.
+    - Set with `az containerapp revision label add ... --label green --revision $APP_NAME--$GREEN_COMMIT_ID`.
+    - Swith with `az containerapp ingress traffic set --name $APP_NAME --resource-group $RESOURCE_GROUP --label-weight blue=0 green=100`.
 
 ![ACA Scale Rules](img/aca-scale-rules.png)
 

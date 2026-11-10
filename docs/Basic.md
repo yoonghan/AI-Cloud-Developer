@@ -96,3 +96,6 @@ B. Set the Minimum Inbound TLS Version to 1.0
 C. Enable HTTPS Only (Correct)
 D. Configure Azure Key Vault with an RSA 4096-bit key
 E. Enable Client Certificates (mTLS) (Correct)
+
+## Compute
+1. AI are *Memory* intensive. High-dimensional vector indexes (such as HNSW used in pgvector) need to be loaded entirely into RAM to perform lightning-fast similarity searches without incurring heavy disk I/O penalties. While F-Series is compute-optimized, vector databases are notoriously memory-bound for indexing and searching.
