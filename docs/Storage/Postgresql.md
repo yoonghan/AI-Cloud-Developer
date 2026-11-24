@@ -5,7 +5,6 @@
 4. Don't look for postgres, look for PostgreSQL in msdocs.
 
 ## Extensions
-Focus on AI
 1. *pgvector*: Enables vector data types and similarity search operations. You can store embeddings alongside relational data and perform approximate nearest neighbor searches. The "Implement vector search with Azure PostgreSQL" module covers pgvector in detail.
 2. *pg_trgm*: Provides trigram-based text similarity functions. Useful for fuzzy text matching, autocomplete features, and finding similar strings without exact matches.
 3. *hstore*: Adds a key-value data type for storing sets of key-value pairs within a single PostgreSQL value. Useful for semi-structured data that doesn't require the full flexibility of JSONB.
@@ -86,10 +85,10 @@ az postgres flexible-server parameter set \
 4. Recursive - read https://learn.microsoft.com/en-us/training/modules/build-query-azure-database-postgresql/5-query-data?pivots=text
 5. CONFLICT - `ON CONFLICT (user_id, preference_key) DO UPDATE SET preference_value = EXCLUDED.preference_value, updated_at = CURRENT_TIMESTAMP;`
 6. JSONB - is json 
-    - -> to extract a JSON element as JSON
-    - ->> o extract it as text (for comparisons and display).
-    - #> returns JSON 
-    - #>> returns text
+    - -&gt; to extract a JSON element as JSON
+    - -&gt;&gt; to extract it as text (for comparisons and display).
+    - &gt; returns JSON 
+    - &gt;&gt; returns text
     - Example 'metadata->>'status' extracts the status field as text, while checkpoint_data#>>'{results,0,score}' navigates a nested path to get a specific value.
     - ? checks existance
     - @> test containment
@@ -368,17 +367,21 @@ const insertQuery = `
 ## Partitioning
 
 ### IVFFlat: lists (Cluster Partitioning)
+
 IVFFlat (Inverted File Flat) divides vector space into $K$ cluster regions (Voronoi cells) using k-means clustering.
 
+```
        IVFFlat Index (lists = 4)
-┌────────────┬────────────┐
-│ Cluster 1  │ Cluster 2  │
-│  •  •  x   │   x  •     │
-├────────────┼────────────┤
-│ Cluster 3  │ Cluster 4  │
-│   •  x     │   •  •  x  │
-└────────────┴────────────┘
+    ┌────────────┬────────────┐
+    │ Cluster 1  │ Cluster 2  │
+    │  •  •  x   │   x  •     │
+    ├────────────┼────────────┤
+    │ Cluster 3  │ Cluster 4  │
+    │   •  x     │   •  •  x  │
+    └────────────┴────────────┘
  (x = cluster centroid, • = vectors)
+```
+
 - lists (Build-time parameter): Specifies the total number of cluster buckets created when the index is built.
 - For 100,000 records, lists = 100 means PostgreSQL clusters the data into 100 distinct buckets (~1,000 vectors per bucket).
 - Recommended Formula for lists:
@@ -392,11 +395,13 @@ IVFFlat (Inverted File Flat) divides vector space into $K$ cluster regions (Voro
 ### HNSW: m and ef_construction (Graph Construction)
 HNSW (Hierarchical Navigable Small World) builds a multi-layered graph where top layers act as "highway express tracks" for fast long-range hops, and bottom layers contain fine-grained local links.
 
+```
 Layer 2 (Highway)    [Node A] ---------------------------> [Node Z]
                         │                                     │
 Layer 1 (Local)      [Node A] ------> [Node F] ------------> [Node Z]
                         │                │                    │
 Layer 0 (Base Data)  [Node A] -> [B] -> [F] -> [G] -> [K] -> [Node Z]
+```
 
 - m (Max Connections Per Node)
     - What it means: The maximum number of outgoing bi-directional links (edges) connected to each node in the graph layers.
@@ -422,6 +427,6 @@ Layer 0 (Base Data)  [Node A] -> [B] -> [F] -> [G] -> [K] -> [Node Z]
 | ivfflat.probes | IVFFlat | Query Execution | Number of buckets searched per query | 1 default (increase for higher recall) |
 | m | HNSW | Index Creation | Max graph connections per node | 16 (8–64 depending on accuracy/RAM) |
 | ef_construction | HNSW | Index Creation | Search depth used during graph building | 64 (128–256 for higher graph quality) |
-    hnsw.ef_search	HNSW	Query Execution	Dynamic candidate pool during search
+| hnsw.ef_search | HNSW	| Query Execution | Dynamic candidate pool during search |
 
     
