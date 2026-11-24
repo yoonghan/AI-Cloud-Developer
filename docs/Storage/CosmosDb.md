@@ -31,17 +31,17 @@
 
 ## Vector data types
 
-```javascript
-vector_embedding_policy = {
-    "vectorEmbeddings": [
-        {
-            "path": "/embedding",
-            "dataType": "float32",
-            "distanceFunction": "cosine",
-            "dimensions": 1536
-        }
-    ]
-}
+```json
+    "vectorEmbeddingPolicy": {
+        "vectorEmbeddings": [
+            {
+                "path": "/embedding",
+                "dataType": "float32",
+                "distanceFunction": "cosine",
+                "dimensions": 1536
+            }
+        ]
+    }
 ```
 
 1. Distance function
@@ -82,9 +82,20 @@ indexing_policy = {
 ## Full text index
 1. Just for fuzzy search text.
 ```
-    "fullTextIndexes": [
-        {"path": "/content"}
-    ]
+    "indexingPolicy": {
+        "fullTextIndexes": [
+            {"path": "/content"}
+        ]
+    },
+    "fullTextPolicy": {
+            "defaultLanguage": "en-US",
+            "fullTextPaths": [
+                {
+                    "path": "/content",
+                    "language": "en-US"
+                }
+            ]
+    },
 ```
 
 ## The code
